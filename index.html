@@ -272,16 +272,7 @@ async function showProfile() {
   }
 }
 
-async function editProfile() {
 
-  if (!user) return;
-
-  document.getElementById('profile').style.display = 'block';
-  document.getElementById('join').style.display = 'none';
-  document.getElementById('profileName').textContent =
-    user.user_metadata.full_name || 'Looply User';
-  document.getElementById('profileEmail').textContent = user.email;
-}
 
 async function editProfile() {
   const newName = prompt('Enter your name:');
