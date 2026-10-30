@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Looply - Social, your way</title>
+<script src="https://esm.sh/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#071426;color:#edf4ff;font-family:Arial,sans-serif}
+header{padding:20px 7%;display:flex;justify-content:space-between;align-items:center;background:#0d2036}
+.brand{font-size:25px;font-weight:bold;color:#2995ff}
+button{background:#1684f8;color:white;border:0;border-radius:25px;padding:12px 22px;font-weight:bold;cursor:pointer}
+main{max-width:1050px;margin:auto;padding:65px 7%}
+h1{font-size:55px;margin-bottom:10px;color:#2995ff}
+h2{font-size:30px}
+p{color:#a9bbd0;line-height:1.8}
+.hero{display:flex;flex-wrap:wrap;align-items:center;gap:30px}
+.hero div{flex:1;min-width:260px}
+.art{font-size:130px;text-align:center;color:#168cff}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:15px;margin-top:50px}
+.feature{background:#102741;padding:22px;border-radius:15px;text-align:center}
+.trending{background:#102741;padding:22px;border-radius:15px;margin-top:35px}
+.modal{display:none;position:fixed;inset:0;background:#000c;align-items:center;justify-content:center;padding:15px}
+.modal.open{display:flex}
+.card{background:#102741;padding:25px;border-radius:18px;width:100%;max-width:400px}
+input{display:block;width:100%;padding:14px;margin:12px 0;background:#071426;border:1px solid #45617d;border-radius:9px;color:white}
+.card button{margin:5px}
+#message{overflow-wrap:anywhere;color:#9fcaff}
+footer{text-align:center;padding:25px;color:#91a5bd}
+</style>
+</head>
+<body>
+<header>
+<div class="brand">∞ Looply</div>
+<div>
+<button id="open">Login / Sign up</button>
+<button id="logout" style="display:none">Log out</button>
+</div>
+</header>
+<main>
+<section class="hero">
+<div>
+<p>👥 YOUR SOCIAL NETWORK</p>
+<h1>Looply</h1>
+<h2>Social, your way.</h2>
+<p>Connect, share, and be yourself. Looply brings you closer to the people and communities that matter.</p>
+<button id="start">Get Started →</button>
+</div>
+<div class="art">∞</div>
+</section>
+<section class="features">
+<div class="feature"><h3>🤝 Connect</h3><p>Meet new people</p></div>
+<div class="feature"><h3>💬 Share</h3><p>Post your thoughts</p></div>
+<div class="feature"><h3>🔒 Be Safe</h3><p>Your privacy matters</p></div>
+<div class="feature"><h3>⚡ Grow</h3><p>Build your community</p></div>
+</section>
+<section class="trending">
+<h2>🔥 Trending Now</h2>
+<p>#Tech — 2.4k posts</p>
+<p>#Lifestyle — 1.8k posts</p>
+<p>#Music — 1.2k posts</p>
+</section>
+</main>
+<footer>© 2026 Looply. All rights reserved.</footer>
+
+<div class="modal" id="modal">
+<div class="card">
+<h2>Welcome to Looply</h2>
+<p>Create an account or log in.</p>
+<input id="email" type="email" placeholder="Email address">
+<input id="password" type="password" placeholder="Password (at least 6 characters)">
+<button id="signup">Create account</button>
+<button id="login">Log in</button>
+<button id="close" style="background:#45617d">Close</button>
+<p id="message"></p>
+</div>
+</div>
+
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase=createClient(
+'https://fmnlkovksnwmyultyohe.supabase.co',
+'sb_publishable_V9UwQqCiwQ6EoGivIjBg3A_OrAvcJuq'
+);
+
+const modal=document.getElementById('modal');
+const message=document.getElementById('message');
+const email=document.getElementById('email');
+const password=document.getElementById('password');
+
+document.getElementById('open').onclick=()=>modal.classList.add('open');
+document.getElementById('start').onclick=()=>modal.classList.add('open');
+document.getElementById('close').onclick=()=>modal.classList.remove('open');
+
+document.getElementById('signup').onclick=async()=>{
+if(!email.value||password.value.length<6){
+message.textContent='Enter a valid email and password of at least 6 characters.';
+return;
+}
+message.textContent='Creating account...';
+const {data,error}=await supabase.auth.signUp({
+email:email.value.trim(),password:password.value
+});
+if(error){message.textContent=error.message;return;}
+message.textContent=data.session?'Account created!':'Account created. Check your email to confirm.';
+};
+
+document.getElementById('login').onclick=async()=>{
+message.textContent='Logging in...';
+const {error}=await supabase.auth.signInWithPassword({
+email:email.value.trim(),password:password.value
+});
+message.textContent=error?error.message:'Welcome back!';
+if(!error)modal.classList.remove('open');
+};
+
+document.getElementById('logout').onclick=async()=>{
+await supabase.auth.signOut();
+};
+
+async function updateUser(){
+const {data}=await supabase.auth.getUser();
+document.getElementById('open').style.display=data.user?'none':'inline-block';
+document.getElementById('logout').style.display=data.user?'inline-block':'none';
+}
+supabase.auth.onAuthStateChange(()=>updateUser());
+updateUser();
+</script>
+</body>
+</html>
