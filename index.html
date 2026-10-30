@@ -312,7 +312,7 @@ async function uploadAvatar() {
   }
 
   const { data } = supabaseClient.storage
-    .from('avatars')
+    .from('Avatars')
     .getPublicUrl(filePath);
 
   const photoUrl = data.publicUrl;
