@@ -242,6 +242,35 @@ await showProfile();
 
 <script>
 async function showProfile() {
+  const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
+
+  if (userError || !user) return;
+
+  document.getElementById('profile').style.display = 'block';
+  document.getElementById('join').style.display = 'none';
+
+  document.getElementById('profileName').textContent =
+    user.user_metadata.full_name || 'Looply User';
+
+  document.getElementById('profileEmail').textContent = user.email;
+
+  const { data: profile, error } = await supabaseClient
+    .from('profiles')
+    .select('avatar_url')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error(error.message);
+    return;
+  }
+
+  if (profile && profile.avatar_url) {
+    document.getElementById('avatarImage').src =
+      profile.avatar_url;
+  }
+} {
   const { data: { user } } = await supabaseClient.auth.getUser();
 
   if (!user) return;
