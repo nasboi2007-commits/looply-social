@@ -271,7 +271,7 @@ async function showProfile() {
       profile.avatar_url;
   }
 } {
-  const { data: { user } } = await supabaseClient.auth.getUser();
+  async function editProfile() {
 
   if (!user) return;
 
