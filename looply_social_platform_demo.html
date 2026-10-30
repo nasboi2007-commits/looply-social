@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Looply — social, your way</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#172033;--muted:#778198;--line:#e8ebf2;--accent:#6757e8;--soft:#f0eeff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#101827;color:white;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 3px 16px #10182722}
+.logo{font-size:22px;font-weight:850;letter-spacing:-1px}.logo span{color:#a99fff}.tag{font-size:11px;color:#c5c9d7}
+.wrap{max-width:1100px;margin:22px auto;padding:0 14px;display:grid;grid-template-columns:220px minmax(0,600px) 220px;gap:18px}
+.panel,.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:16px}
+.side{position:sticky;top:82px;align-self:start}.nav button{width:100%;border:0;background:transparent;text-align:left;padding:12px;border-radius:11px;font-size:15px;color:#46516a;cursor:pointer}.nav button.active,.nav button:hover{background:var(--soft);color:var(--accent);font-weight:700}
+h3{margin:0 0 12px;font-size:15px}.muted{color:var(--muted);font-size:13px}.feed{display:grid;gap:14px}.composer textarea{width:100%;resize:vertical;min-height:76px;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;outline-color:var(--accent)}
+.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#7568ef,#d9a6ff);color:white;display:grid;place-items:center;font-weight:800;flex:none}.name{font-weight:750}.handle{font-size:12px;color:var(--muted)}
+button.primary{background:var(--accent);color:#fff;border:0;border-radius:11px;padding:10px 15px;font-weight:700;cursor:pointer}
+button.action{background:#f6f7fb;border:1px solid var(--line);border-radius:10px;padding:8px 11px;color:#566078;cursor:pointer}
+button.action.liked{background:#fff0f3;color:#d63362;border-color:#ffd5df}
+.postbody{white-space:pre-wrap;margin:14px 0}.postimg{width:100%;max-height:340px;object-fit:cover;border-radius:13px;margin-top:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px}
+input{font:inherit}.commentbox{display:flex;gap:7px;margin-top:10px}.commentbox input{min-width:0;flex:1;border:1px solid var(--line);border-radius:10px;padding:9px}.comment{font-size:13px;background:#f7f8fc;padding:8px 10px;border-radius:10px;margin-top:7px}
+.trend{padding:9px 0;border-bottom:1px solid var(--line)}.trend:last-child{border:0}.trend b{display:block}.notice{background:#f5f3ff;border:1px solid #e4dfff;padding:12px;border-radius:12px;color:#4d438c;font-size:12px}
+.empty{text-align:center;padding:30px;color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:25px}
+@media(max-width:850px){.wrap{grid-template-columns:1fr;max-width:650px}.left,.right{display:none}.side{position:static}.nav{display:flex;gap:5px;overflow:auto}.nav button{white-space:nowrap;width:auto}.panel{padding:10px}.wrap{margin:12px auto}}
+</style>
+</head>
+<body>
+<header><div><div class="logo">loop<span>ly</span></div><div class="tag">Connect. Share. Discover.</div></div><div class="tag">EARLY DEMO</div></header>
+<div class="wrap">
+<aside class="left side">
+ <div class="panel nav">
+  <h3>Your space</h3>
+  <button class="active" onclick="showTab('feed',this)">⌂ &nbsp; Home feed</button>
+  <button onclick="showTab('discover',this)">✦ &nbsp; Discover</button>
+  <button onclick="showTab('profile',this)">◎ &nbsp; My profile</button>
+ </div>
+ <div class="panel" style="margin-top:14px"><h3>Community promise</h3><p class="muted">Be real. Be respectful. Share things that make the internet better.</p></div>
+</aside>
+<main>
+ <section class="card composer">
+  <div class="row" style="margin-bottom:12px"><div class="avatar">Y</div><div><div class="name">Your next post</div><div class="handle">Share a thought with the community</div></div></div>
+  <textarea id="postText" placeholder="What's happening?"></textarea>
+  <div class="row between" style="margin-top:10px"><span class="muted">Text posts in this starter demo</span><button class="primary" onclick="createPost()">Publish post</button></div>
+ </section>
+ <div id="viewTitle" style="font-weight:800;margin:18px 2px 10px">Your feed</div>
+ <section id="feed" class="feed"></section>
+</main>
+<aside class="right side">
+ <div class="panel"><h3>What's trending</h3>
+  <div class="trend"><b>#Creators</b><span class="muted">Share what you make</span></div>
+  <div class="trend"><b>#GoodVibes</b><span class="muted">Small wins count</span></div>
+  <div class="trend"><b>#NewIdeas</b><span class="muted">Start a conversation</span></div>
+ </div>
+ <div class="notice" style="margin-top:14px"><b>Demo notice</b><br>Posts and likes are saved only in this browser. This is not yet a public multi-user network and no money is being earned yet.</div>
+</aside>
+</div>
+<footer>Looply starter demo · Be kind online · Report harmful content when the full platform launches</footer>
+<script>
+const starter=[
+{id:1,user:"Looply Team",handle:"@looply",text:"Welcome to Looply — a new place for conversations, ideas and community. This is our first demo post. What would you like to see here?",likes:3,liked:false,comments:["A clean start!"]},
+{id:2,user:"Amina",handle:"@amina",text:"Reminder: your progress does not have to look like anybody else's. Keep going. ✨",likes:8,liked:false,comments:[]},
+{id:3,user:"Jay",handle:"@jaycreates",text:"What is one skill you would love to learn before the end of this year?",likes:5,liked:false,comments:["Video editing","Web development"]}
+];
+let posts=JSON.parse(localStorage.getItem("looply_posts")||"null")||starter;
+let currentTab="feed";
+function save(){localStorage.setItem("looply_posts",JSON.stringify(posts))}
+function initials(s){return s.slice(0,1).toUpperCase()}
+function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function render(){
+ const root=document.getElementById("feed");root.innerHTML="";
+ let list=currentTab==="discover"?[...posts].reverse():currentTab==="profile"?posts.filter(p=>p.user==="You"):posts;
+ document.getElementById("viewTitle").textContent=currentTab==="discover"?"Discover posts":currentTab==="profile"?"Your posts":"Your feed";
+ if(!list.length){root.innerHTML='<div class="card empty">No posts here yet. Create the first one above.</div>';return}
+ list.forEach(p=>{
+  const card=document.createElement("article");card.className="card";
+  card.innerHTML=`<div class="row"><div class="avatar">${initials(escapeHTML(p.user))}</div><div><div class="name">${escapeHTML(p.user)}</div><div class="handle">${escapeHTML(p.handle)} · demo</div></div></div>
+  <div class="postbody">${escapeHTML(p.text)}</div>
+  <div class="actions"><button class="action ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">♥ ${p.likes} Likes</button><button class="action" onclick="document.getElementById('comment-${p.id}').focus()">▢ ${p.comments.length} Comments</button><button class="action" onclick="reportPost(${p.id})">⚑ Report</button></div>
+  <div id="comments-${p.id}">${p.comments.map(c=>`<div class="comment">${escapeHTML(c)}</div>`).join("")}</div>
+  <div class="commentbox"><input id="comment-${p.id}" placeholder="Write a comment..." maxlength="240"><button class="action" onclick="addComment(${p.id})">Send</button></div>`;
+  root.appendChild(card);
+ });
+}
+function createPost(){const box=document.getElementById("postText"),text=box.value.trim();if(!text){alert("Write something first.");return}posts.unshift({id:Date.now(),user:"You",handle:"@you",text,likes:0,liked:false,comments:[]});box.value="";save();currentTab="feed";render()}
+function toggleLike(id){const p=posts.find(x=>x.id===id);if(!p)return;p.liked=!p.liked;p.likes+=p.liked?1:-1;save();render()}
+function addComment(id){const input=document.getElementById("comment-"+id),v=input.value.trim();if(!v)return;posts.find(x=>x.id===id).comments.push(v);save();render()}
+function reportPost(id){alert("Thanks. In the full platform, reports will go to a moderation team. This demo does not submit reports to a server.")}
+function showTab(tab,btn){currentTab=tab;document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");render()}
+render();
+</script>
+</body>
+</html>
