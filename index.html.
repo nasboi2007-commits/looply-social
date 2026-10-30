@@ -1,95 +1,264 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101827">
-<title>Looply — social, your way</title>
-<style>
-:root{--bg:#f4f6fb;--card:#fff;--ink:#172033;--muted:#778198;--line:#e8ebf2;--accent:#6757e8;--soft:#f0eeff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{position:sticky;top:0;z-index:5;background:#101827;color:white;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 3px 16px #10182722}
-.logo{font-size:22px;font-weight:850;letter-spacing:-1px}.logo span{color:#a99fff}.tag{font-size:11px;color:#c5c9d7}
-.wrap{max-width:1100px;margin:22px auto;padding:0 14px;display:grid;grid-template-columns:220px minmax(0,600px) 220px;gap:18px}
-.panel,.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:16px}
-.side{position:sticky;top:82px;align-self:start}.nav button{width:100%;border:0;background:transparent;text-align:left;padding:12px;border-radius:11px;font-size:15px;color:#46516a;cursor:pointer}.nav button.active,.nav button:hover{background:var(--soft);color:var(--accent);font-weight:700}
-h3{margin:0 0 12px;font-size:15px}.muted{color:var(--muted);font-size:13px}.feed{display:grid;gap:14px}.composer textarea{width:100%;resize:vertical;min-height:76px;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;outline-color:var(--accent)}
-.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#7568ef,#d9a6ff);color:white;display:grid;place-items:center;font-weight:800;flex:none}.name{font-weight:750}.handle{font-size:12px;color:var(--muted)}
-button.primary{background:var(--accent);color:#fff;border:0;border-radius:11px;padding:10px 15px;font-weight:700;cursor:pointer}
-button.action{background:#f6f7fb;border:1px solid var(--line);border-radius:10px;padding:8px 11px;color:#566078;cursor:pointer}
-button.action.liked{background:#fff0f3;color:#d63362;border-color:#ffd5df}
-.postbody{white-space:pre-wrap;margin:14px 0}.postimg{width:100%;max-height:340px;object-fit:cover;border-radius:13px;margin-top:8px}
-.actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px}
-input{font:inherit}.commentbox{display:flex;gap:7px;margin-top:10px}.commentbox input{min-width:0;flex:1;border:1px solid var(--line);border-radius:10px;padding:9px}.comment{font-size:13px;background:#f7f8fc;padding:8px 10px;border-radius:10px;margin-top:7px}
-.trend{padding:9px 0;border-bottom:1px solid var(--line)}.trend:last-child{border:0}.trend b{display:block}.notice{background:#f5f3ff;border:1px solid #e4dfff;padding:12px;border-radius:12px;color:#4d438c;font-size:12px}
-.empty{text-align:center;padding:30px;color:var(--muted)}
-footer{text-align:center;color:var(--muted);font-size:11px;padding:25px}
-@media(max-width:850px){.wrap{grid-template-columns:1fr;max-width:650px}.left,.right{display:none}.side{position:static}.nav{display:flex;gap:5px;overflow:auto}.nav button{white-space:nowrap;width:auto}.panel{padding:10px}.wrap{margin:12px auto}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#081525" />
+  <title>Looply — Social, your way</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg: #071426;
+      --panel: #0d2036;
+      --panel-2: #102741;
+      --line: #1d3854;
+      --blue: #1684f8;
+      --blue-2: #0868df;
+      --text: #edf4ff;
+      --muted: #91a5bd;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 85% 18%, rgba(0, 100, 220, .15), transparent 27rem),
+        radial-gradient(circle at 12% 75%, rgba(0, 72, 160, .10), transparent 25rem),
+        var(--bg);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 max(5%, calc((100% - 1120px) / 2));
+      background: rgba(7, 20, 38, .88);
+      border-bottom: 1px solid rgba(50, 83, 118, .55);
+      backdrop-filter: blur(14px);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 21px; font-weight: 800; letter-spacing: -.7px; }
+    .brand-mark {
+      display: grid; place-items: center; width: 38px; height: 38px;
+      border-radius: 13px; color: white; font-size: 22px;
+      background: linear-gradient(145deg, #31a5ff, #0864dc);
+      box-shadow: 0 7px 22px rgba(0, 115, 255, .28);
+    }
+    .nav { display: flex; align-items: center; gap: 34px; color: #c1cede; font-size: 14px; }
+    .nav a { transition: color .2s; }
+    .nav a:hover, .nav a.active { color: #fff; }
+    .nav a.active { position: relative; }
+    .nav a.active::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: -29px;
+      height: 3px; border-radius: 5px; background: var(--blue);
+    }
+    .login {
+      border: 0; color: white; background: linear-gradient(135deg, #168cff, #0868e6);
+      border-radius: 24px; padding: 11px 22px; font-weight: 600;
+      box-shadow: 0 6px 20px rgba(0, 111, 255, .2);
+    }
+    .menu-btn { display: none; border: 1px solid var(--line); color: white; background: var(--panel); border-radius: 10px; padding: 8px 11px; }
+
+    .wrap { width: min(1100px, 90%); margin: 0 auto; }
+    .hero {
+      position: relative; overflow: hidden; display: grid; grid-template-columns: 1.15fr .85fr;
+      align-items: center; gap: 35px; min-height: 485px; padding: 76px 0 55px;
+    }
+    .hero::before, .hero::after {
+      content: ""; position: absolute; border-radius: 50%; pointer-events: none;
+      background: linear-gradient(145deg, rgba(20, 126, 255, .30), rgba(0, 68, 158, .05));
+      border: 1px solid rgba(44, 139, 255, .13);
+    }
+    .hero::before { width: 170px; height: 170px; right: -60px; top: 110px; }
+    .hero::after { width: 52px; height: 52px; right: 90px; top: 62px; }
+    .hero-copy { position: relative; z-index: 1; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px;
+      color: #d8eaff; background: rgba(25, 87, 151, .28);
+      border: 1px solid rgba(60, 139, 225, .16); border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    h1 { margin: 20px 0 8px; font-size: clamp(48px, 7vw, 68px); line-height: 1; letter-spacing: -3.8px; }
+    h1 span { color: #238cff; }
+    .hero h2 { margin: 0 0 15px; font-size: clamp(27px, 4vw, 39px); line-height: 1.15; letter-spacing: -1.5px; }
+    .lead { max-width: 480px; margin: 0; color: var(--muted); font-size: 15px; line-height: 1.8; }
+    .actions { display: flex; gap: 14px; margin-top: 25px; flex-wrap: wrap; }
+    .primary, .secondary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      border-radius: 28px; padding: 13px 22px; font-size: 14px; font-weight: 600;
+      transition: transform .2s, background .2s;
+    }
+    .primary { color: white; background: linear-gradient(135deg, #168cff, #0868e6); border: 1px solid transparent; box-shadow: 0 8px 24px rgba(0, 111, 255, .2); }
+    .secondary { color: #d9e5f5; background: transparent; border: 1px solid #29435f; }
+    .primary:hover, .secondary:hover { transform: translateY(-2px); }
+    .hero-art { min-height: 290px; display: grid; place-items: center; position: relative; }
+    .orbit {
+      width: 270px; height: 270px; border-radius: 50%; border: 1px solid rgba(43, 133, 255, .2);
+      display: grid; place-items: center; box-shadow: 0 0 75px rgba(0, 99, 255, .12), inset 0 0 55px rgba(0, 99, 255, .08);
+      background: radial-gradient(circle, rgba(16, 76, 145, .2), transparent 68%);
+    }
+    .orbit-inner {
+      width: 176px; height: 176px; display: grid; place-items: center; border-radius: 42px;
+      transform: rotate(-8deg); background: linear-gradient(145deg, #188fff, #0752bd);
+      box-shadow: 0 20px 55px rgba(0, 91, 220, .35);
+      font-size: 72px;
+    }
+    .float-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #0878ef; box-shadow: 0 0 22px #0878ef; }
+    .dot-one { top: 35px; right: 12%; } .dot-two { bottom: 38px; left: 12%; width: 9px; height: 9px; }
+
+    .features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 5px 0 44px; }
+    .feature { text-align: center; color: #dce7f5; }
+    .feature-icon {
+      width: 48px; height: 48px; margin: 0 auto 10px; display: grid; place-items: center;
+      border-radius: 50%; color: #2995ff; background: rgba(12, 87, 164, .22); font-size: 22px;
+      border: 1px solid rgba(31, 120, 215, .12);
+    }
+    .feature strong { display: block; font-size: 14px; margin-bottom: 5px; }
+    .feature small { color: var(--muted); font-size: 11px; }
+
+    .trending {
+      margin: 0 0 42px; padding: 22px 24px 12px; border-radius: 16px;
+      background: linear-gradient(145deg, rgba(17, 42, 68, .94), rgba(10, 29, 50, .96));
+      border: 1px solid rgba(40, 75, 111, .65); box-shadow: 0 12px 35px rgba(0, 0, 0, .16);
+    }
+    .trend-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .trend-head h3 { margin: 0; font-size: 17px; }
+    .trend-head a { color: #268fff; font-size: 12px; font-weight: 600; }
+    .trend-item {
+      display: flex; align-items: center; gap: 14px; padding: 12px 2px;
+      border-bottom: 1px solid rgba(54, 83, 113, .28); transition: padding .2s;
+    }
+    .trend-item:last-child { border-bottom: 0; }
+    .trend-item:hover { padding-left: 8px; }
+    .trend-icon { flex: 0 0 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; font-size: 20px; color: white; }
+    .code { background: linear-gradient(145deg, #7b9ab8, #315779); }
+    .leaf { background: linear-gradient(145deg, #36d68c, #078b5a); }
+    .music { background: linear-gradient(145deg, #d34bff, #7926d5); }
+    .trend-info { flex: 1; }
+    .trend-info strong { display: block; font-size: 13px; margin-bottom: 4px; }
+    .trend-info small { color: var(--muted); font-size: 11px; }
+    .arrow { color: #8da4bd; font-size: 22px; }
+    footer {
+      border-top: 1px solid rgba(45, 75, 108, .45); padding: 20px 0 25px;
+      color: #8195ad; font-size: 11px;
+    }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+    .socials { display: flex; gap: 17px; color: #238cff; font-size: 15px; font-weight: 700; }
+
+    @media (max-width: 700px) {
+      .topbar { height: 66px; padding: 0 5%; }
+      .menu-btn { display: block; }
+      .nav {
+        display: none; position: absolute; top: 65px; left: 0; right: 0; padding: 20px 5%;
+        flex-direction: column; align-items: flex-start; gap: 20px; background: #0a1b30;
+        border-bottom: 1px solid var(--line);
+      }
+      .nav.open { display: flex; }
+      .nav a.active::after { display: none; }
+      .login { padding: 9px 15px; }
+      .hero { grid-template-columns: 1fr; padding: 58px 0 28px; gap: 5px; }
+      .hero-art { min-height: 230px; }
+      .orbit { width: 205px; height: 205px; }
+      .orbit-inner { width: 132px; height: 132px; border-radius: 32px; font-size: 55px; }
+      .features { grid-template-columns: repeat(2, 1fr); row-gap: 25px; padding-bottom: 34px; }
+      .trending { padding: 18px 16px 8px; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 380px) {
+      .brand { font-size: 18px; }
+      .brand-mark { width: 34px; height: 34px; }
+      .login { font-size: 12px; }
+      .lead { font-size: 14px; }
+    }
+  </style>
 </head>
 <body>
-<header><div><div class="logo">loop<span>ly</span></div><div class="tag">Connect. Share. Discover.</div></div><div class="tag">EARLY DEMO</div></header>
-<div class="wrap">
-<aside class="left side">
- <div class="panel nav">
-  <h3>Your space</h3>
-  <button class="active" onclick="showTab('feed',this)">⌂ &nbsp; Home feed</button>
-  <button onclick="showTab('discover',this)">✦ &nbsp; Discover</button>
-  <button onclick="showTab('profile',this)">◎ &nbsp; My profile</button>
- </div>
- <div class="panel" style="margin-top:14px"><h3>Community promise</h3><p class="muted">Be real. Be respectful. Share things that make the internet better.</p></div>
-</aside>
-<main>
- <section class="card composer">
-  <div class="row" style="margin-bottom:12px"><div class="avatar">Y</div><div><div class="name">Your next post</div><div class="handle">Share a thought with the community</div></div></div>
-  <textarea id="postText" placeholder="What's happening?"></textarea>
-  <div class="row between" style="margin-top:10px"><span class="muted">Text posts in this starter demo</span><button class="primary" onclick="createPost()">Publish post</button></div>
- </section>
- <div id="viewTitle" style="font-weight:800;margin:18px 2px 10px">Your feed</div>
- <section id="feed" class="feed"></section>
-</main>
-<aside class="right side">
- <div class="panel"><h3>What's trending</h3>
-  <div class="trend"><b>#Creators</b><span class="muted">Share what you make</span></div>
-  <div class="trend"><b>#GoodVibes</b><span class="muted">Small wins count</span></div>
-  <div class="trend"><b>#NewIdeas</b><span class="muted">Start a conversation</span></div>
- </div>
- <div class="notice" style="margin-top:14px"><b>Demo notice</b><br>Posts and likes are saved only in this browser. This is not yet a public multi-user network and no money is being earned yet.</div>
-</aside>
-</div>
-<footer>Looply starter demo · Be kind online · Report harmful content when the full platform launches</footer>
-<script>
-const starter=[
-{id:1,user:"Looply Team",handle:"@looply",text:"Welcome to Looply — a new place for conversations, ideas and community. This is our first demo post. What would you like to see here?",likes:3,liked:false,comments:["A clean start!"]},
-{id:2,user:"Amina",handle:"@amina",text:"Reminder: your progress does not have to look like anybody else's. Keep going. ✨",likes:8,liked:false,comments:[]},
-{id:3,user:"Jay",handle:"@jaycreates",text:"What is one skill you would love to learn before the end of this year?",likes:5,liked:false,comments:["Video editing","Web development"]}
-];
-let posts=JSON.parse(localStorage.getItem("looply_posts")||"null")||starter;
-let currentTab="feed";
-function save(){localStorage.setItem("looply_posts",JSON.stringify(posts))}
-function initials(s){return s.slice(0,1).toUpperCase()}
-function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function render(){
- const root=document.getElementById("feed");root.innerHTML="";
- let list=currentTab==="discover"?[...posts].reverse():currentTab==="profile"?posts.filter(p=>p.user==="You"):posts;
- document.getElementById("viewTitle").textContent=currentTab==="discover"?"Discover posts":currentTab==="profile"?"Your posts":"Your feed";
- if(!list.length){root.innerHTML='<div class="card empty">No posts here yet. Create the first one above.</div>';return}
- list.forEach(p=>{
-  const card=document.createElement("article");card.className="card";
-  card.innerHTML=`<div class="row"><div class="avatar">${initials(escapeHTML(p.user))}</div><div><div class="name">${escapeHTML(p.user)}</div><div class="handle">${escapeHTML(p.handle)} · demo</div></div></div>
-  <div class="postbody">${escapeHTML(p.text)}</div>
-  <div class="actions"><button class="action ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">♥ ${p.likes} Likes</button><button class="action" onclick="document.getElementById('comment-${p.id}').focus()">▢ ${p.comments.length} Comments</button><button class="action" onclick="reportPost(${p.id})">⚑ Report</button></div>
-  <div id="comments-${p.id}">${p.comments.map(c=>`<div class="comment">${escapeHTML(c)}</div>`).join("")}</div>
-  <div class="commentbox"><input id="comment-${p.id}" placeholder="Write a comment..." maxlength="240"><button class="action" onclick="addComment(${p.id})">Send</button></div>`;
-  root.appendChild(card);
- });
-}
-function createPost(){const box=document.getElementById("postText"),text=box.value.trim();if(!text){alert("Write something first.");return}posts.unshift({id:Date.now(),user:"You",handle:"@you",text,likes:0,liked:false,comments:[]});box.value="";save();currentTab="feed";render()}
-function toggleLike(id){const p=posts.find(x=>x.id===id);if(!p)return;p.liked=!p.liked;p.likes+=p.liked?1:-1;save();render()}
-function addComment(id){const input=document.getElementById("comment-"+id),v=input.value.trim();if(!v)return;posts.find(x=>x.id===id).comments.push(v);save();render()}
-function reportPost(id){alert("Thanks. In the full platform, reports will go to a moderation team. This demo does not submit reports to a server.")}
-function showTab(tab,btn){currentTab=tab;document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");render()}
-render();
-</script>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="Looply home">
+      <span class="brand-mark">∞</span><span>Looply</span>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <nav class="nav" id="nav">
+      <a class="active" href="#home">Home</a>
+      <a href="#trending">Explore</a>
+      <a href="#about">About</a>
+    </nav>
+    <button class="login" onclick="showMessage('Login page coming soon!')">Login</button>
+  </header>
+
+  <main class="wrap" id="home">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">👥 &nbsp; Social Network</span>
+        <h1><span>Looply</span></h1>
+        <h2>Social, your way</h2>
+        <p class="lead">Connect, share, and be yourself. Looply brings you closer to the people and communities that matter.</p>
+        <div class="actions">
+          <a class="primary" href="#trending">Get Started <span>→</span></a>
+          <a class="secondary" href="#about">Learn More</a>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <span class="float-dot dot-one"></span><span class="float-dot dot-two"></span>
+        <div class="orbit"><div class="orbit-inner">∞</div></div>
+      </div>
+    </section>
+
+    <section class="features" id="about" aria-label="Looply features">
+      <div class="feature"><div class="feature-icon">♧</div><strong>Connect</strong><small>Meet new people</small></div>
+      <div class="feature"><div class="feature-icon">☏</div><strong>Share</strong><small>Post your thoughts</small></div>
+      <div class="feature"><div class="feature-icon">◈</div><strong>Be Safe</strong><small>Your privacy matters</small></div>
+      <div class="feature"><div class="feature-icon">ϟ</div><strong>Grow</strong><small>Build your community</small></div>
+    </section>
+
+    <section class="trending" id="trending">
+      <div class="trend-head"><h3>🔥 Trending Now</h3><a href="#trending" onclick="showMessage('More communities will appear here soon.')">See all →</a></div>
+      <a class="trend-item" href="#trending" onclick="showMessage('Opening the #Tech community soon!')">
+        <span class="trend-icon code">&lt;/&gt;</span>
+        <span class="trend-info"><strong>#Tech</strong><small>2.4k posts • 3.1k members</small></span><span class="arrow">›</span>
+      </a>
+      <a class="trend-item" href="#trending" onclick="showMessage('Opening the #Lifestyle community soon!')">
+        <span class="trend-icon leaf">✓</span>
+        <span class="trend-info"><strong>#Lifestyle</strong><small>1.8k posts • 2.2k members</small></span><span class="arrow">›</span>
+      </a>
+      <a class="trend-item" href="#trending" onclick="showMessage('Opening the #Music community soon!')">
+        <span class="trend-icon music">♫</span>
+        <span class="trend-info"><strong>#Music</strong><small>1.2k posts • 1.5k members</small></span><span class="arrow">›</span>
+      </a>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>© 2025 Looply. All rights reserved.</span>
+      <div class="socials" aria-label="Social links"><a href="#home" aria-label="Twitter">♥</a><a href="#home" aria-label="Instagram">◎</a><a href="#home" aria-label="YouTube">▶</a><a href="#home" aria-label="TikTok">♪</a><a href="#home" aria-label="Website">◎</a></div>
+    </div>
+  </footer>
+
+  <script>
+    const menuBtn = document.getElementById('menuBtn');
+    const nav = document.getElementById('nav');
+    menuBtn.addEventListener('click', () => {
+      const opened = nav.classList.toggle('open');
+      menuBtn.setAttribute('aria-expanded', String(opened));
+    });
+    nav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+      nav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }));
+    function showMessage(message) {
+      alert(message);
+    }
+  </script>
 </body>
 </html>
