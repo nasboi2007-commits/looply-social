@@ -266,12 +266,13 @@ async function showProfile() {
     return;
   }
 
-  if (profile && profile.avatar_url) {
+    if (profile && profile.avatar_url) {
     document.getElementById('avatarImage').src =
       profile.avatar_url;
   }
-  }
-  async function editProfile() {
+}
+
+async function editProfile() {
 
   if (!user) return;
 
