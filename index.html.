@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,6 +68,20 @@
       box-shadow: 0 6px 20px rgba(0, 111, 255, .2);
     }
     .menu-btn { display: none; border: 1px solid var(--line); color: white; background: var(--panel); border-radius: 10px; padding: 8px 11px; }
+    .auth-modal { display:none; position:fixed; inset:0; z-index:30; background:rgba(0,0,0,.72); padding:18px; align-items:center; justify-content:center; }
+    .auth-modal.open { display:flex; }
+    .auth-card { width:min(430px,100%); background:#0d2036; border:1px solid #294766; border-radius:20px; padding:25px; box-shadow:0 24px 80px rgba(0,0,0,.45); }
+    .auth-card h2 { margin:0 0 7px; font-size:24px; }
+    .auth-card p { color:var(--muted); font-size:13px; line-height:1.6; }
+    .auth-card label { display:block; margin:14px 0 6px; color:#dce7f5; font-size:12px; }
+    .auth-card input { width:100%; padding:13px 14px; border:1px solid #29435f; border-radius:10px; color:white; background:#071426; outline:none; }
+    .auth-card input:focus { border-color:#168cff; }
+    .auth-actions { display:flex; gap:10px; margin-top:18px; }
+    .auth-actions button { flex:1; border:0; border-radius:11px; padding:12px; color:white; background:#0878ef; font-weight:700; }
+    .auth-actions .quiet { background:#193550; }
+    .auth-note { min-height:20px; margin-top:12px; color:#9fcaff; font-size:12px; overflow-wrap:anywhere; }
+    .auth-top { display:flex; justify-content:space-between; align-items:center; }
+    .close-auth { border:0; background:transparent; color:#b9cbe0; font-size:24px; }
 
     .wrap { width: min(1100px, 90%); margin: 0 auto; }
     .hero {
@@ -193,7 +206,11 @@
       <a href="#trending">Explore</a>
       <a href="#about">About</a>
     </nav>
-    <button class="login" onclick="showMessage('Login page coming soon!')">Login</button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="userLabel" style="font-size:12px;color:#b9cbe0"></span>
+      <button class="login" id="authOpenBtn">Login / Sign up</button>
+      <button class="login" id="logoutBtn" style="display:none">Log out</button>
+    </div>
   </header>
 
   <main class="wrap" id="home">
@@ -238,6 +255,27 @@
     </section>
   </main>
 
+
+  <div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <div class="auth-card">
+      <div class="auth-top">
+        <div><h2 id="authTitle">Welcome to Looply</h2><p id="authSubtitle">Create an account or log in.</p></div>
+        <button class="close-auth" id="authCloseBtn" aria-label="Close">&times;</button>
+      </div>
+      <form id="authForm">
+        <label for="authEmail">Email address</label>
+        <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" required />
+        <label for="authPassword">Password</label>
+        <input id="authPassword" type="password" autocomplete="current-password" minlength="6" placeholder="At least 6 characters" required />
+        <div class="auth-actions">
+          <button type="button" id="signInBtn">Log in</button>
+          <button type="button" id="signUpBtn" class="quiet">Create account</button>
+        </div>
+      </form>
+      <div class="auth-note" id="authMessage" aria-live="polite"></div>
+    </div>
+  </div>
+
   <footer>
     <div class="wrap footer-inner">
       <span>© 2025 Looply. All rights reserved.</span>
@@ -256,9 +294,90 @@
       nav.classList.remove('open');
       menuBtn.setAttribute('aria-expanded', 'false');
     }));
-    function showMessage(message) {
-      alert(message);
+  </script>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    // These are your project's browser-safe URL and publishable key.
+    const SUPABASE_URL = 'https://fmnlkovksnwmyultyohe.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_V9UwQqCiwQ6EoGivIjBg3A_OrAvcJuq';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    const modal = document.getElementById('authModal');
+    const message = document.getElementById('authMessage');
+    const emailInput = document.getElementById('authEmail');
+    const passwordInput = document.getElementById('authPassword');
+    const openBtn = document.getElementById('authOpenBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userLabel = document.getElementById('userLabel');
+
+    function showAuthMessage(text, isError = false) {
+      message.textContent = text;
+      message.style.color = isError ? '#ff9a9a' : '#9fcaff';
     }
+    function openAuth() {
+      modal.classList.add('open');
+      showAuthMessage('');
+    }
+    function closeAuth() { modal.classList.remove('open'); }
+
+    openBtn.addEventListener('click', openAuth);
+    document.getElementById('authCloseBtn').addEventListener('click', closeAuth);
+    modal.addEventListener('click', event => { if (event.target === modal) closeAuth(); });
+
+    document.getElementById('signUpBtn').addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      if (!email || password.length < 6) {
+        showAuthMessage('Enter a valid email and a password with at least 6 characters.', true);
+        return;
+      }
+      showAuthMessage('Creating your account…');
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) return showAuthMessage(error.message, true);
+      if (data.session) {
+        showAuthMessage('Account created! You are now logged in.');
+        closeAuth();
+      } else {
+        showAuthMessage('Account created. Check your email for the confirmation link, then log in.');
+      }
+    });
+
+    document.getElementById('signInBtn').addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      if (!email || !password) {
+        showAuthMessage('Enter your email and password.', true);
+        return;
+      }
+      showAuthMessage('Logging in…');
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return showAuthMessage(error.message, true);
+      showAuthMessage('Welcome back!');
+      closeAuth();
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) alert(error.message);
+    });
+
+    async function refreshUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        userLabel.textContent = user.email;
+        openBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+      } else {
+        userLabel.textContent = '';
+        openBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+      }
+    }
+
+    supabase.auth.onAuthStateChange(() => refreshUser());
+    await refreshUser();
   </script>
 </body>
 </html>
