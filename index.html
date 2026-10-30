@@ -216,4 +216,58 @@
     showForm('signup');
   </script>
 </body>
+<section id="profile" style="display:none; padding:30px 7%; text-align:center;">
+  <h2>My Looply Profile 💜</h2>
+  <div style="margin:20px auto; width:100px; height:100px; border-radius:50%; background:#eee0ff; display:grid; place-items:center; font-size:45px;">
+    👤
+  </div>
+  <h3 id="profileName">Your Name</h3>
+  <p id="profileEmail"></p>
+  <p id="profileBio">Welcome to my Looply profile!</p>
+  <button onclick="editProfile()" style="padding:12px 22px; margin-top:15px; border:0; border-radius:20px; background:#793bdf; color:white;">
+    Edit profile
+  </button>
+  <button onclick="logout()" style="padding:12px 22px; margin-top:15px; border:0; border-radius:20px; background:#ed45a5; color:white;">
+    Log out
+  </button>
+</section>
+
+<script>
+async function showProfile() {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (!user) return;
+
+  document.getElementById('profile').style.display = 'block';
+  document.getElementById('join').style.display = 'none';
+  document.getElementById('profileName').textContent =
+    user.user_metadata.full_name || 'Looply User';
+  document.getElementById('profileEmail').textContent = user.email;
+}
+
+async function editProfile() {
+  const newName = prompt('Enter your name:');
+  if (!newName) return;
+
+  const { error } = await supabaseClient.auth.updateUser({
+    data: { full_name: newName }
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    document.getElementById('profileName').textContent = newName;
+    alert('Profile updated!');
+  }
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  location.reload();
+}
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (session) showProfile();
+});
+</script>
 </html>
