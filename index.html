@@ -303,7 +303,7 @@ async function uploadAvatar() {
   const filePath = user.id + '/' + Date.now() + '-' + file.name;
 
   const { error } = await supabaseClient.storage
-    .from('avatars')
+    .from('Avatars')
     .upload(filePath, file);
 
   if (error) {
