@@ -339,9 +339,11 @@ async function uploadAvatar() {
   const photoUrl = data.publicUrl;
 
   const { error: updateError } = await supabaseClient
-    .from('profiles')
-    .update({ avatar_url: photoUrl })
-    .eq('id', user.id);
+  .from('profiles')
+  .upsert({
+    id: user.id,
+    avatar_url: photoUrl
+  });
 
   if (updateError) {
     alert(updateError.message);
