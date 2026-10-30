@@ -205,6 +205,7 @@
           });
           if (error) throw error;
           message.textContent = 'You are logged in successfully!';
+await showProfile();
         }
       } catch (error) {
         message.textContent = error.message;
