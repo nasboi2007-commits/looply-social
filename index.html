@@ -219,9 +219,16 @@ await showProfile();
 </body>
 <section id="profile" style="display:none; padding:30px 7%; text-align:center;">
   <h2>My Looply Profile 💜</h2>
-  <div style="margin:20px auto; width:100px; height:100px; border-radius:50%; background:#eee0ff; display:grid; place-items:center; font-size:45px;">
-    👤
-  </div>
+  <div style="margin:20px auto;">
+  <img id="avatarImage" src="" alt="Profile photo"
+    style="width:110px;height:110px;border-radius:50%;object-fit:cover;background:#eee0ff;">
+  <br>
+  <input id="avatarFile" type="file" accept="image/*">
+  <button onclick="uploadAvatar()"
+    style="padding:12px 22px;border:0;border-radius:20px;background:#793bdf;color:white;">
+    Upload photo
+  </button>
+</div>
   <h3 id="profileName">Your Name</h3>
   <p id="profileEmail"></p>
   <p id="profileBio">Welcome to my Looply profile!</p>
@@ -267,8 +274,61 @@ async function logout() {
   location.reload();
 }
 
-supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (session) showProfile();
-});
+async function uploadAvatar() {
+  const file = document.getElementById('avatarFile').files[0];
+
+  if (!file) {
+    alert('Please choose a photo first.');
+    return;
+  }
+
+  if (!file.type.startsWith('image/')) {
+    alert('Please choose an image file.');
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Photo must be smaller than 5 MB.');
+    return;
+  }
+
+  const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    alert('Please log in first.');
+    return;
+  }
+
+  const filePath = user.id + '/' + Date.now() + '-' + file.name;
+
+  const { error } = await supabaseClient.storage
+    .from('avatars')
+    .upload(filePath, file);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  const { data } = supabaseClient.storage
+    .from('avatars')
+    .getPublicUrl(filePath);
+
+  const photoUrl = data.publicUrl;
+
+  const { error: updateError } = await supabaseClient
+    .from('profiles')
+    .update({ avatar_url: photoUrl })
+    .eq('id', user.id);
+
+  if (updateError) {
+    alert(updateError.message);
+    return;
+  }
+
+  document.getElementById('avatarImage').src = photoUrl;
+  alert('Profile photo uploaded successfully! 💜');
+}
 </script>
 </html>
