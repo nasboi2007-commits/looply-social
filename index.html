@@ -1,153 +1,189 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100c19">
 <title>Looply - Connect. Share. Belong.</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;background:#f7f4ff;color:#24143d}
-header{background:white;padding:15px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.logo{font-size:27px;font-weight:bold;color:#793bdf}
-button{border:0;border-radius:10px;padding:11px 15px;background:#793bdf;color:white;cursor:pointer;margin:4px}
-button:disabled{opacity:.5}
-input,textarea{width:100%;padding:13px;margin:7px 0;border:1px solid #ddd;border-radius:10px;font-size:16px}
-textarea{min-height:80px}
-section{padding:25px 5%;text-align:center}
-.hero{background:linear-gradient(120deg,#6334d9,#a33fda,#f044a5);color:white;padding:65px 20px;text-align:center}
-.hero h1{font-size:clamp(32px,7vw,55px);margin-bottom:15px}
-.hero p{line-height:1.6}
-.auth,.feature,.post,.panel{background:white;padding:20px;border-radius:16px;margin:15px auto;max-width:520px}
+:root{--bg:#090711;--surface:#171222;--surface2:#241a31;--line:#302440;--pink:#e45aff;--purple:#8539d3;--muted:#bcaecb}
+html{scroll-behavior:smooth;scroll-padding-top:115px}
+body{font-family:Arial,sans-serif;background:var(--bg);color:#fff;padding-bottom:82px}
+header{position:sticky;top:0;z-index:50;background:rgba(16,12,25,.97);padding:10px 13px;display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+.logo{font-size:27px;font-weight:800;letter-spacing:-1px;color:#e2a7ff}
+header>div:last-child{display:flex;gap:3px;align-items:center}
+button{border:0;border-radius:10px;padding:10px 13px;background:var(--purple);color:white;cursor:pointer;font-size:14px;margin:3px}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,textarea{width:100%;padding:13px;margin:7px 0;border:1px solid #473656;border-radius:10px;font-size:16px;background:#21182c;color:#fff}
+input::placeholder,textarea::placeholder{color:#b5a6c4}
+textarea{min-height:80px;resize:vertical}
+section{padding:16px 12px;text-align:center;scroll-margin-top:110px}
+.hero{display:none}
+.auth,.feature,.post,.panel{background:var(--surface);padding:18px;border:1px solid var(--line);border-radius:16px;margin:12px auto;max-width:600px;color:#fff}
 .auth{max-width:420px}
 .tabs,.feed-tabs{display:flex;gap:8px;margin:15px 0}
-.tabs button,.feed-tabs button{flex:1;background:#eee7ff;color:#6334d9}
-.tabs button.active,.feed-tabs button.active{background:#793bdf;color:white}
+.tabs button,.feed-tabs button{flex:1;background:#30213f;color:#d8c9e4}
+.tabs button.active,.feed-tabs button.active{background:linear-gradient(90deg,#793bdf,#d946c9);color:#fff}
 .submit{width:100%;background:linear-gradient(90deg,#793bdf,#ed45a5)}
 #profile,#appArea,#notificationsPanel,#messagesPanel{display:none}
-#avatarImage{width:95px;height:95px;border-radius:50%;object-fit:cover;background:#eee}
-.post{text-align:left;max-width:550px}
-.post img,.post video{width:100%;max-height:450px;object-fit:contain;margin-top:12px;border-radius:10px}
-.post-author{font-weight:bold;color:#793bdf;margin-bottom:8px}
-.comment-area{border-top:1px solid #eee;margin-top:12px;padding-top:12px}
-.comment-item{background:#f7f4ff;padding:10px;margin:8px 0;border-radius:10px;overflow-wrap:anywhere}
-.comment-form{display:flex;gap:5px}
+#profile{max-width:700px;margin:14px auto;background:var(--surface);border:1px solid var(--line);border-radius:18px}
+#avatarImage{width:100px;height:100px;border-radius:50%;object-fit:cover;background:#30213f;border:3px solid #d85cff}
+#peopleSection .panel,#createPanel{max-width:700px}
+#postsSection{max-width:760px;margin:0 auto;padding:8px 0 24px}
+#postsSection>h2{font-size:20px;text-align:left;padding:12px 16px}
+.feed-tabs{position:sticky;top:55px;z-index:30;background:rgba(16,12,25,.97);padding:8px 14px;margin:0;border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+.feed-tabs button{background:transparent;color:var(--muted);border-radius:0;font-weight:bold}
+.feed-tabs button.active{background:transparent;color:#fff;border-bottom:3px solid var(--pink)}
+#postsFeed{padding:2px 10px}
+.post{text-align:left;max-width:100%;padding:13px;margin:12px auto 18px;border-radius:17px;background:#130f1c}
+.post-author{font-weight:bold;color:#e2a7ff;margin-bottom:9px}
+.post-caption{line-height:1.45;margin:7px 0 10px;overflow-wrap:anywhere}
+.post img,.post video{display:block;width:100%;height:min(72vh,680px);max-height:680px;object-fit:cover;margin:10px auto;border-radius:13px;background:#050408}
+.post video{object-fit:contain}
+.post button{background:#30213f;color:#fff}
+.comment-area{border-top:1px solid #392c49;margin-top:12px;padding-top:12px}
+.comment-item{background:var(--surface2);padding:10px;margin:8px 0;border-radius:10px;overflow-wrap:anywhere}
+.comment-form{display:flex;gap:5px;align-items:flex-end}
 .comment-form textarea{flex:1;min-height:45px}
-.follow-stats{display:flex;justify-content:center;gap:15px;flex-wrap:wrap;margin:15px}
-.follow-stats p{background:#eee7ff;padding:12px;border-radius:10px}
-.person,.notification-item{padding:12px;background:#f7f4ff;border-radius:10px;margin:8px 0;text-align:left}
+.follow-stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:15px}
+.follow-stats p{background:#30213f;padding:12px 18px;border-radius:10px}
+.person,.notification-item{padding:12px;background:var(--surface2);border-radius:10px;margin:8px 0;text-align:left}
 .person{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .person button{flex-shrink:0}
-#chatMessages{max-height:300px;overflow:auto;background:#faf8ff;padding:10px;border-radius:10px;text-align:left}
+#chatMessages{max-height:45vh;overflow:auto;background:#100c19;padding:10px;border-radius:10px;text-align:left}
 .bubble{padding:10px;margin:7px 0;border-radius:12px;max-width:85%;overflow-wrap:anywhere}
-.mine{background:#793bdf;color:white;margin-left:auto}
-.theirs{background:#eee7ff}
-footer{text-align:center;padding:25px;color:#766987}
-@media(max-width:450px){header{justify-content:center}.logo{width:100%;text-align:center}.person{align-items:flex-start}}
+.mine{background:#8539d3;color:white;margin-left:auto}
+.theirs{background:#30213f;color:#fff}
+#bottomNav{position:fixed;bottom:0;left:0;right:0;z-index:70;display:none;justify-content:space-around;align-items:center;background:rgba(16,12,25,.98);border-top:1px solid var(--line);padding:7px 3px calc(7px + env(safe-area-inset-bottom));backdrop-filter:blur(12px)}
+#bottomNav button{background:transparent;color:#cdbbdc;margin:0;padding:6px 4px;min-width:55px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
+#bottomNav button .navIcon{font-size:21px;line-height:22px}
+#bottomNav button.active{color:#e2a7ff}
+footer{text-align:center;padding:20px;color:#92839f;font-size:12px}
+#authMessage,#postStatus,#chatStatus{margin:8px 0;color:#e5c8ff;overflow-wrap:anywhere}
+@media(min-width:700px){
+ #appArea{max-width:760px;margin:auto}
+ #postsFeed{padding:5px 18px}
+ .post{padding:17px}
+ .post img,.post video{height:620px}
+ header{padding-left:max(16px,calc((100vw - 760px)/2));padding-right:max(16px,calc((100vw - 760px)/2))}
+}
+@media(max-width:430px){
+ header{padding:8px}
+ .logo{font-size:23px}
+ header button{font-size:11px;padding:8px 7px}
+ .post img,.post video{height:68vh}
+ .person{align-items:flex-start}
+}
 </style>
 </head>
 <body>
-
 <header>
-<div class="logo">Looply ✨</div>
-<div>
-<button onclick="togglePanel('notificationsPanel')">🔔 Notifications <span id="unreadCount">0</span></button>
-<button onclick="togglePanel('messagesPanel')">💬 Messages</button>
-<button onclick="logout()" id="logoutButton" style="display:none;background:#ed45a5">Log out</button>
-</div>
+  <div class="logo">Looply ✨</div>
+  <div>
+    <button onclick="togglePanel('notificationsPanel')">🔔 <span id="unreadCount">0</span></button>
+    <button onclick="togglePanel('messagesPanel')">💬</button>
+    <button onclick="logout()" id="logoutButton" style="display:none;background:#ed45a5">Log out</button>
+  </div>
 </header>
 
-<div class="hero">
-<h1>Your people. Your moments. Your Loop.</h1>
-<p>Meet people, share moments and stay connected.</p>
-</div>
-
 <section id="welcome">
-<h2>Welcome to Looply 💜</h2>
-<div class="auth">
-<div class="tabs">
-<button id="signupTab" class="active" onclick="setMode('signup')">Sign up</button>
-<button id="loginTab" onclick="setMode('login')">Log in</button>
-</div>
-<form id="authForm">
-<input id="name" placeholder="Your name" required>
-<input id="email" type="email" placeholder="Email address" required>
-<input id="password" type="password" minlength="6" placeholder="Password (at least 6 characters)" required>
-<button class="submit" id="authButton" type="submit">Create account</button>
-</form>
-<p id="authMessage"></p>
-</div>
+  <h2>Welcome to Looply 💜</h2>
+  <p style="margin:8px 0;color:#cdbbdc">Connect. Share. Belong.</p>
+  <div class="auth">
+    <div class="tabs">
+      <button id="signupTab" class="active" onclick="setMode('signup')">Sign up</button>
+      <button id="loginTab" onclick="setMode('login')">Log in</button>
+    </div>
+    <form id="authForm">
+      <input id="name" placeholder="Your name" required>
+      <input id="email" type="email" placeholder="Email address" required>
+      <input id="password" type="password" minlength="6" placeholder="Password (at least 6 characters)" required>
+      <button class="submit" id="authButton" type="submit">Create account</button>
+    </form>
+    <p id="authMessage"></p>
+  </div>
 </section>
 
 <div id="appArea">
-<section id="profile">
-<h2>My Looply Profile 💜</h2>
-<img id="avatarImage" alt="Profile photo">
-<input type="file" id="avatarFile" accept="image/*">
-<button onclick="uploadAvatar()">Upload profile photo</button>
-<h3 id="profileName"></h3>
-<p id="profileEmail"></p>
-<div class="follow-stats">
-<p><strong id="followerCount">0</strong><br>Followers</p>
-<p><strong id="followingCount">0</strong><br>Following</p>
-</div>
-<button onclick="editName()">Edit name</button>
-</section>
+  <section id="profile">
+    <h2>My Looply Profile 💜</h2>
+    <div style="margin:14px"><img id="avatarImage" alt="Profile photo"></div>
+    <input type="file" id="avatarFile" accept="image/*">
+    <button onclick="uploadAvatar()">Upload profile photo</button>
+    <h3 id="profileName" style="margin:12px 0 5px"></h3>
+    <p id="profileEmail" style="color:#cdbbdc"></p>
+    <div class="follow-stats">
+      <p><strong id="followerCount">0</strong><br>Followers</p>
+      <p><strong id="followingCount">0</strong><br>Following</p>
+    </div>
+    <button onclick="editName()">Edit name</button>
+  </section>
 
-<section>
-<div class="panel">
-<h2>Find people to follow 💜</h2>
-<input id="followSearch" placeholder="Search members by name" oninput="searchPeople()">
-<div id="peopleResults"></div>
-</div>
-</section>
+  <section id="peopleSection">
+    <div class="panel">
+      <h2>Discover people 💜</h2>
+      <input id="followSearch" placeholder="Search members by name" oninput="searchPeople()">
+      <div id="peopleResults"></div>
+    </div>
+  </section>
 
-<section id="postsSection">
-<div class="panel">
-<h2>Share a moment 💜</h2>
-<textarea id="caption" placeholder="What's happening?"></textarea>
-<input type="file" id="mediaFile" accept="image/*,video/*">
-<button class="submit" onclick="createPost()">Share post</button>
-<p id="postStatus"></p>
-</div>
-<h2>Community posts</h2>
-<div class="feed-tabs">
-<button id="allTab" class="active" onclick="changeFeed('all')">For You</button>
-<button id="followingTab" onclick="changeFeed('following')">Following</button>
-</div>
-<div id="postsFeed">Loading posts...</div>
-</section>
+  <section id="postsSection">
+    <h2>Your Looply feed</h2>
+    <div class="feed-tabs">
+      <button id="allTab" class="active" onclick="changeFeed('all')">For You</button>
+      <button id="followingTab" onclick="changeFeed('following')">Following</button>
+    </div>
+    <div id="postsFeed">Loading posts...</div>
+  </section>
 
-<section id="notificationsPanel">
-<div class="panel">
-<h2>🔔 Notifications</h2>
-<div id="notificationList">Loading...</div>
-<button onclick="markNotificationsRead()">Mark all as read</button>
-</div>
-</section>
+  <section id="createSection">
+    <div class="panel" id="createPanel">
+      <h2>Create a post ✨</h2>
+      <textarea id="caption" placeholder="What's happening?"></textarea>
+      <input type="file" id="mediaFile" accept="image/*,video/*">
+      <button class="submit" onclick="createPost()">Share post</button>
+      <p id="postStatus"></p>
+    </div>
+  </section>
 
-<section id="messagesPanel">
-<div class="panel">
-<h2>💬 Looply Messages</h2>
-<input id="messageSearch" placeholder="Find a member by name" oninput="searchMessagePeople()">
-<div id="messagePeople"></div>
-<h3>Your conversations</h3>
-<div id="inbox"></div>
-<div id="chatWindow" style="display:none">
-<h3 id="chatName"></h3>
-<div id="chatMessages"></div>
-<form id="sendMessageForm">
-<textarea id="messageInput" placeholder="Write a message..." required></textarea>
-<button type="submit">Send</button>
-</form>
-<p id="chatStatus"></p>
-<button onclick="closeChat()">Close chat</button>
-</div>
-</div>
-</section>
+  <section id="notificationsPanel">
+    <div class="panel">
+      <h2>🔔 Notifications</h2>
+      <div id="notificationList">Loading...</div>
+      <button onclick="markNotificationsRead()">Mark all as read</button>
+    </div>
+  </section>
+
+  <section id="messagesPanel">
+    <div class="panel">
+      <h2>💬 Looply Messages</h2>
+      <input id="messageSearch" placeholder="Find a member by name" oninput="searchMessagePeople()">
+      <div id="messagePeople"></div>
+      <h3 style="margin:14px 0 8px">Your conversations</h3>
+      <div id="inbox"></div>
+      <div id="chatWindow" style="display:none">
+        <h3 id="chatName"></h3>
+        <div id="chatMessages"></div>
+        <form id="sendMessageForm">
+          <textarea id="messageInput" placeholder="Write a message..." required></textarea>
+          <button type="submit">Send</button>
+        </form>
+        <p id="chatStatus"></p>
+        <button onclick="closeChat()">Close chat</button>
+      </div>
+    </div>
+  </section>
 </div>
 
+<nav id="bottomNav">
+  <button class="active" onclick="goTo('postsSection',this)"><span class="navIcon">⌂</span>Home</button>
+  <button onclick="goTo('peopleSection',this)"><span class="navIcon">⌕</span>Discover</button>
+  <button onclick="goTo('createSection',this)"><span class="navIcon">＋</span>Create</button>
+  <button onclick="goTo('messagesPanel',this)"><span class="navIcon">✉</span>Inbox</button>
+  <button onclick="goTo('profile',this)"><span class="navIcon">◎</span>Profile</button>
+</nav>
 <footer>© 2026 Looply. Connect. Share. Belong. 💜</footer>
 
 <script>
@@ -163,392 +199,411 @@ let activeChat=null;
 function el(id){return document.getElementById(id)}
 function message(id,text){el(id).textContent=text}
 
+function goTo(id,button){
+  const target=el(id);
+  if(!target)return;
+  target.scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('#bottomNav button').forEach(b=>b.classList.remove('active'));
+  if(button)button.classList.add('active');
+  if(id==='messagesPanel')loadInbox();
+  if(id==='notificationsPanel')loadNotifications();
+}
+
 function setMode(value){
-mode=value;
-el('name').style.display=value==='signup'?'block':'none';
-el('name').required=value==='signup';
-el('signupTab').classList.toggle('active',value==='signup');
-el('loginTab').classList.toggle('active',value==='login');
-el('authButton').textContent=value==='signup'?'Create account':'Log in';
-message('authMessage','');
+  mode=value;
+  el('name').style.display=value==='signup'?'block':'none';
+  el('name').required=value==='signup';
+  el('signupTab').classList.toggle('active',value==='signup');
+  el('loginTab').classList.toggle('active',value==='login');
+  el('authButton').textContent=value==='signup'?'Create account':'Log in';
+  message('authMessage','');
 }
 
 el('authForm').addEventListener('submit',async e=>{
-e.preventDefault();
-el('authButton').disabled=true;
-message('authMessage','Please wait...');
-try{
-const email=el('email').value.trim();
-const password=el('password').value;
-if(mode==='signup'){
-const {data,error}=await db.auth.signUp({
-email,password,
-options:{data:{full_name:el('name').value.trim()}}
-});
-if(error)throw error;
-if(data.session){await startApp();}
-else message('authMessage','Account created! Check your email to confirm your account.');
-}else{
-const {error}=await db.auth.signInWithPassword({email,password});
-if(error)throw error;
-await startApp();
-}
-}catch(error){message('authMessage',error.message);}
-finally{el('authButton').disabled=false;}
+  e.preventDefault();
+  el('authButton').disabled=true;
+  message('authMessage','Please wait...');
+  try{
+    const email=el('email').value.trim();
+    const password=el('password').value;
+    if(mode==='signup'){
+      const {data,error}=await db.auth.signUp({
+        email,password,
+        options:{data:{full_name:el('name').value.trim()}}
+      });
+      if(error)throw error;
+      if(data.session){await startApp();}
+      else message('authMessage','Account created! Check your email to confirm your account.');
+    }else{
+      const {error}=await db.auth.signInWithPassword({email,password});
+      if(error)throw error;
+      await startApp();
+    }
+  }catch(error){message('authMessage',error.message);}
+  finally{el('authButton').disabled=false;}
 });
 
 async function startApp(){
-const result=await db.auth.getUser();
-user=result.data.user;
-if(!user)return;
-el('welcome').style.display='none';
-el('appArea').style.display='block';
-el('profile').style.display='block';
-el('postsSection').style.display='block';
-el('logoutButton').style.display='inline-block';
-el('profileName').textContent=user.user_metadata?.full_name||'Looply User';
-el('profileEmail').textContent=user.email||'';
-const {data:profile}=await db.from('profiles').select('avatar_url').eq('id',user.id).maybeSingle();
-if(profile?.avatar_url)el('avatarImage').src=profile.avatar_url;
-await Promise.all([loadPosts(),loadStats(),loadNotifications(),loadInbox()]);
+  const result=await db.auth.getUser();
+  user=result.data.user;
+  if(!user)return;
+  el('welcome').style.display='none';
+  el('appArea').style.display='block';
+  el('profile').style.display='block';
+  el('postsSection').style.display='block';
+  el('peopleSection').style.display='block';
+  el('createSection').style.display='block';
+  el('logoutButton').style.display='inline-block';
+  el('bottomNav').style.display='flex';
+  el('profileName').textContent=user.user_metadata?.full_name||'Looply User';
+  el('profileEmail').textContent=user.email||'';
+  const {data:profile}=await db.from('profiles').select('avatar_url').eq('id',user.id).maybeSingle();
+  if(profile?.avatar_url)el('avatarImage').src=profile.avatar_url;
+  await Promise.all([loadPosts(),loadStats(),loadNotifications(),loadInbox()]);
 }
 
 async function editName(){
-const value=prompt('Enter your new name');
-if(!value?.trim())return;
-const name=value.trim();
-const {error}=await db.auth.updateUser({data:{full_name:name}});
-if(error){alert(error.message);return;}
-user=(await db.auth.getUser()).data.user;
-el('profileName').textContent=name;
-await db.from('looply_directory').upsert({user_id:user.id,display_name:name});
-alert('Name updated!');
+  const value=prompt('Enter your new name');
+  if(!value?.trim())return;
+  const name=value.trim();
+  const {error}=await db.auth.updateUser({data:{full_name:name}});
+  if(error){alert(error.message);return;}
+  user=(await db.auth.getUser()).data.user;
+  el('profileName').textContent=name;
+  const {error:directoryError}=await db.from('looply_directory').upsert({user_id:user.id,display_name:name});
+  if(directoryError)alert(directoryError.message);
+  else alert('Name updated!');
 }
 
 async function logout(){
-const {error}=await db.auth.signOut();
-if(error){alert(error.message);return;}
-location.reload();
+  const {error}=await db.auth.signOut();
+  if(error){alert(error.message);return;}
+  location.reload();
 }
 
 async function uploadAvatar(){
-const file=el('avatarFile').files[0];
-if(!file){alert('Choose a photo first.');return;}
-if(file.size>5*1024*1024){alert('Photo must be under 5 MB.');return;}
-const path=user.id+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-const {error}=await db.storage.from('avatars').upload(path,file);
-if(error){alert(error.message);return;}
-const url=db.storage.from('avatars').getPublicUrl(path).data.publicUrl;
-const {error:saveError}=await db.from('profiles').upsert({id:user.id,avatar_url:url});
-if(saveError){alert(saveError.message);return;}
-el('avatarImage').src=url;
-alert('Profile photo updated!');
+  const file=el('avatarFile').files[0];
+  if(!file){alert('Choose a photo first.');return;}
+  if(file.size>5*1024*1024){alert('Photo must be under 5 MB.');return;}
+  const path=user.id+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  const {error}=await db.storage.from('avatars').upload(path,file);
+  if(error){alert(error.message);return;}
+  const url=db.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+  const {error:saveError}=await db.from('profiles').upsert({id:user.id,avatar_url:url});
+  if(saveError){alert(saveError.message);return;}
+  el('avatarImage').src=url;
+  alert('Profile photo updated!');
 }
 
 async function createPost(){
-const file=el('mediaFile').files[0];
-if(!file){message('postStatus','Please select a photo or video.');return;}
-if(file.size>50*1024*1024){message('postStatus','File must be under 50 MB.');return;}
-message('postStatus','Uploading...');
-const type=file.type.startsWith('video/')?'video':'image';
-const bucket=type==='video'?'videos':'posts';
-const path=user.id+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-const {error:uploadError}=await db.storage.from(bucket).upload(path,file);
-if(uploadError){message('postStatus',uploadError.message);return;}
-const url=db.storage.from(bucket).getPublicUrl(path).data.publicUrl;
-const {error}=await db.from('posts').insert({
-user_id:user.id,
-caption:el('caption').value.trim(),
-image:type==='image'?url:null,
-video:type==='video'?url:null,
-media_type:type
-});
-if(error){message('postStatus',error.message);return;}
-el('caption').value='';
-el('mediaFile').value='';
-message('postStatus','Post shared successfully! 💜');
-await loadPosts();
+  const file=el('mediaFile').files[0];
+  if(!file){message('postStatus','Please select a photo or video.');return;}
+  if(file.size>50*1024*1024){message('postStatus','File must be under 50 MB.');return;}
+  message('postStatus','Uploading...');
+  const type=file.type.startsWith('video/')?'video':'image';
+  const bucket=type==='video'?'videos':'posts';
+  const path=user.id+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  const {error:uploadError}=await db.storage.from(bucket).upload(path,file);
+  if(uploadError){message('postStatus',uploadError.message);return;}
+  const url=db.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+  const {error}=await db.from('posts').insert({
+    user_id:user.id,
+    caption:el('caption').value.trim(),
+    image:type==='image'?url:null,
+    video:type==='video'?url:null,
+    media_type:type
+  });
+  if(error){message('postStatus',error.message);return;}
+  el('caption').value='';
+  el('mediaFile').value='';
+  message('postStatus','Post shared successfully! 💜');
+  await loadPosts();
+  goTo('postsSection',document.querySelector('#bottomNav button'));
 }
 
 function changeFeed(value){
-feedMode=value;
-el('allTab').classList.toggle('active',value==='all');
-el('followingTab').classList.toggle('active',value==='following');
-loadPosts();
+  feedMode=value;
+  el('allTab').classList.toggle('active',value==='all');
+  el('followingTab').classList.toggle('active',value==='following');
+  loadPosts();
 }
 
 async function loadPosts(){
-const box=el('postsFeed');
-box.textContent='Loading posts...';
-const {data:allPosts,error}=await db.from('posts').select('*').order('created_at',{ascending:false});
-if(error){box.textContent=error.message;return;}
-let posts=allPosts||[];
-if(feedMode==='following'){
-const {data:follows,error:followError}=await db.from('follows').select('following_id').eq('follower_id',user.id);
-if(followError){box.textContent=followError.message;return;}
-const ids=(follows||[]).map(x=>x.following_id);
-posts=posts.filter(post=>ids.includes(post.user_id));
-}
-const {data:likes,error:likesError}=await db.from('likes').select('id,post_id,user_id');
-if(likesError){box.textContent=likesError.message;return;}
-const {data:comments,error:commentsError}=await db.from('comments').select('*').order('created_at');
-if(commentsError){box.textContent=commentsError.message;return;}
-box.replaceChildren();
-if(posts.length===0){
-box.textContent=feedMode==='following'?'No posts from people you follow yet. Follow members to fill this feed! 💜':'No posts yet. Be the first to share!';
-return;
-}
-for(const post of posts){
-const card=document.createElement('div');
-card.className='post';
-const author=document.createElement('p');
-author.className='post-author';
-author.textContent=post.user_id===user.id?'You':'Looply member';
-card.appendChild(author);
-const caption=document.createElement('p');
-caption.textContent=post.caption||'';
-card.appendChild(caption);
-const video=post.media_type==='video'||(!post.image&&post.video);
-const url=video?post.video:post.image;
-if(url){
-const media=document.createElement(video?'video':'img');
-media.src=url;
-if(video){media.controls=true;media.playsInline=true;}
-card.appendChild(media);
-}
-const postLikes=likes.filter(x=>x.post_id===post.id);
-let liked=postLikes.some(x=>x.user_id===user.id);
-const like=document.createElement('button');
-function drawLike(){like.textContent=(liked?'❤️':'🤍')+' Like ('+postLikes.length+')';}
-drawLike();
-like.onclick=async()=>{
-like.disabled=true;
-if(liked){
-const {error}=await db.from('likes').delete().eq('post_id',post.id).eq('user_id',user.id);
-if(error)alert(error.message);
-else{liked=false;postLikes.pop();drawLike();}
-}else{
-const {error}=await db.from('likes').insert({post_id:post.id,user_id:user.id});
-if(error)alert(error.message);
-else{liked=true;postLikes.push({user_id:user.id});drawLike();}
-}
-like.disabled=false;
-};
-card.appendChild(like);
+  const box=el('postsFeed');
+  box.textContent='Loading posts...';
+  const {data:allPosts,error}=await db.from('posts').select('*').order('created_at',{ascending:false});
+  if(error){box.textContent=error.message;return;}
+  let posts=allPosts||[];
+  if(feedMode==='following'){
+    const {data:follows,error:followError}=await db.from('follows').select('following_id').eq('follower_id',user.id);
+    if(followError){box.textContent=followError.message;return;}
+    const ids=(follows||[]).map(x=>x.following_id);
+    posts=posts.filter(post=>ids.includes(post.user_id));
+  }
+  const {data:likes,error:likesError}=await db.from('likes').select('id,post_id,user_id');
+  if(likesError){box.textContent=likesError.message;return;}
+  const {data:comments,error:commentsError}=await db.from('comments').select('*').order('created_at');
+  if(commentsError){box.textContent=commentsError.message;return;}
+  box.replaceChildren();
+  if(posts.length===0){
+    box.textContent=feedMode==='following'?'No posts from people you follow yet. Follow members to fill this feed! 💜':'No posts yet. Be the first to share!';
+    return;
+  }
+  for(const post of posts){
+    const card=document.createElement('div');
+    card.className='post';
+    const author=document.createElement('p');
+    author.className='post-author';
+    author.textContent=post.user_id===user.id?'You':'Looply member';
+    card.appendChild(author);
+    const caption=document.createElement('p');
+    caption.className='post-caption';
+    caption.textContent=post.caption||'';
+    card.appendChild(caption);
+    const video=post.media_type==='video'||(!post.image&&post.video);
+    const url=video?post.video:post.image;
+    if(url){
+      const media=document.createElement(video?'video':'img');
+      media.src=url;
+      if(video){media.controls=true;media.playsInline=true;media.preload='metadata';}
+      else{media.alt='Looply post image';media.loading='lazy';}
+      card.appendChild(media);
+    }
+    const postLikes=likes.filter(x=>x.post_id===post.id);
+    let liked=postLikes.some(x=>x.user_id===user.id);
+    const like=document.createElement('button');
+    function drawLike(){like.textContent=(liked?'❤️':'🤍')+' Like ('+postLikes.length+')';}
+    drawLike();
+    like.onclick=async()=>{
+      like.disabled=true;
+      if(liked){
+        const {error}=await db.from('likes').delete().eq('post_id',post.id).eq('user_id',user.id);
+        if(error)alert(error.message);
+        else{liked=false;const i=postLikes.findIndex(x=>x.user_id===user.id);if(i>=0)postLikes.splice(i,1);drawLike();}
+      }else{
+        const {error}=await db.from('likes').insert({post_id:post.id,user_id:user.id});
+        if(error)alert(error.message);
+        else{liked=true;postLikes.push({user_id:user.id});drawLike();}
+      }
+      like.disabled=false;
+    };
+    card.appendChild(like);
 
-const area=document.createElement('div');
-area.className='comment-area';
-const heading=document.createElement('strong');
-heading.textContent='💬 Comments';
-area.appendChild(heading);
-const list=document.createElement('div');
-function drawComments(){
-list.replaceChildren();
-comments.filter(x=>x.post_id===post.id).forEach(comment=>{
-const item=document.createElement('div');
-item.className='comment-item';
-item.textContent=(comment.user_id===user.id?'You':'Looply member')+': '+comment.content;
-if(comment.user_id===user.id){
-const del=document.createElement('button');
-del.textContent='Delete';
-del.onclick=async()=>{
-const {error}=await db.from('comments').delete().eq('id',comment.id).eq('user_id',user.id);
-if(error)alert(error.message);
-else{const i=comments.findIndex(x=>x.id===comment.id);if(i>=0)comments.splice(i,1);drawComments();}
-};
-item.appendChild(del);
-}
-list.appendChild(item);
-});
-if(!list.childNodes.length)list.textContent='No comments yet.';
-}
-drawComments();
-area.appendChild(list);
-const form=document.createElement('form');
-form.className='comment-form';
-const input=document.createElement('textarea');
-input.placeholder='Write a comment...';
-input.required=true;
-const send=document.createElement('button');
-send.textContent='Send';
-form.append(input,send);
-form.onsubmit=async e=>{
-e.preventDefault();
-const content=input.value.trim();
-if(!content)return;
-send.disabled=true;
-const {data,error}=await db.from('comments').insert({post_id:post.id,user_id:user.id,content}).select().single();
-if(error)alert(error.message);
-else{comments.push(data);input.value='';drawComments();}
-send.disabled=false;
-};
-area.appendChild(form);
-card.appendChild(area);
-box.appendChild(card);
-}
+    const area=document.createElement('div');
+    area.className='comment-area';
+    const heading=document.createElement('strong');
+    heading.textContent='💬 Comments';
+    area.appendChild(heading);
+    const list=document.createElement('div');
+    function drawComments(){
+      list.replaceChildren();
+      comments.filter(x=>x.post_id===post.id).forEach(comment=>{
+        const item=document.createElement('div');
+        item.className='comment-item';
+        item.textContent=(comment.user_id===user.id?'You':'Looply member')+': '+comment.content;
+        if(comment.user_id===user.id){
+          const del=document.createElement('button');
+          del.textContent='Delete';
+          del.onclick=async()=>{
+            const {error}=await db.from('comments').delete().eq('id',comment.id).eq('user_id',user.id);
+            if(error)alert(error.message);
+            else{const i=comments.findIndex(x=>x.id===comment.id);if(i>=0)comments.splice(i,1);drawComments();}
+          };
+          item.appendChild(del);
+        }
+        list.appendChild(item);
+      });
+      if(!list.childNodes.length)list.textContent='No comments yet.';
+    }
+    drawComments();
+    area.appendChild(list);
+    const form=document.createElement('form');
+    form.className='comment-form';
+    const input=document.createElement('textarea');
+    input.placeholder='Write a comment...';
+    input.required=true;
+    const send=document.createElement('button');
+    send.textContent='Send';
+    form.append(input,send);
+    form.onsubmit=async e=>{
+      e.preventDefault();
+      const content=input.value.trim();
+      if(!content)return;
+      send.disabled=true;
+      const {data,error}=await db.from('comments').insert({post_id:post.id,user_id:user.id,content}).select().single();
+      if(error)alert(error.message);
+      else{comments.push(data);input.value='';drawComments();}
+      send.disabled=false;
+    };
+    area.appendChild(form);
+    card.appendChild(area);
+    box.appendChild(card);
+  }
 }
 
 async function loadStats(){
-const [a,b]=await Promise.all([
-db.from('follows').select('id',{count:'exact',head:true}).eq('following_id',user.id),
-db.from('follows').select('id',{count:'exact',head:true}).eq('follower_id',user.id)
-]);
-el('followerCount').textContent=a.count||0;
-el('followingCount').textContent=b.count||0;
+  const [a,b]=await Promise.all([
+    db.from('follows').select('id',{count:'exact',head:true}).eq('following_id',user.id),
+    db.from('follows').select('id',{count:'exact',head:true}).eq('follower_id',user.id)
+  ]);
+  el('followerCount').textContent=a.count||0;
+  el('followingCount').textContent=b.count||0;
 }
 
 async function searchPeople(){
-const term=el('followSearch').value.trim();
-const box=el('peopleResults');
-if(term.length<2){box.textContent='Type at least 2 letters.';return;}
-box.textContent='Searching...';
-const {data:people,error}=await db.from('looply_directory').select('user_id,display_name').ilike('display_name','%'+term+'%').neq('user_id',user.id).limit(20);
-if(error){box.textContent=error.message;return;}
-box.replaceChildren();
-if(!people?.length){box.textContent='No members found.';return;}
-const {data:mine,error:mineError}=await db.from('follows').select('following_id').eq('follower_id',user.id);
-if(mineError){box.textContent=mineError.message;return;}
-const followed=new Set((mine||[]).map(x=>x.following_id));
-people.forEach(person=>{
-const row=document.createElement('div');row.className='person';
-const name=document.createElement('strong');name.textContent=person.display_name;
-const button=document.createElement('button');button.textContent=followed.has(person.user_id)?'Unfollow':'Follow';
-button.onclick=async()=>{
-button.disabled=true;
-let result;
-if(followed.has(person.user_id)){
-result=await db.from('follows').delete().eq('follower_id',user.id).eq('following_id',person.user_id);
-}else{
-result=await db.from('follows').insert({follower_id:user.id,following_id:person.user_id});
-}
-if(result.error)alert(result.error.message);
-await searchPeople();await loadStats();if(feedMode==='following')await loadPosts();
-};
-row.append(name,button);box.appendChild(row);
-});
+  const term=el('followSearch').value.trim();
+  const box=el('peopleResults');
+  if(term.length<2){box.textContent='Type at least 2 letters.';return;}
+  box.textContent='Searching...';
+  const {data:people,error}=await db.from('looply_directory').select('user_id,display_name').ilike('display_name','%'+term+'%').neq('user_id',user.id).limit(20);
+  if(error){box.textContent=error.message;return;}
+  box.replaceChildren();
+  if(!people?.length){box.textContent='No members found.';return;}
+  const {data:mine,error:mineError}=await db.from('follows').select('following_id').eq('follower_id',user.id);
+  if(mineError){box.textContent=mineError.message;return;}
+  const followed=new Set((mine||[]).map(x=>x.following_id));
+  people.forEach(person=>{
+    const row=document.createElement('div');row.className='person';
+    const name=document.createElement('strong');name.textContent=person.display_name;
+    const button=document.createElement('button');button.textContent=followed.has(person.user_id)?'Unfollow':'Follow';
+    button.onclick=async()=>{
+      button.disabled=true;
+      let result;
+      if(followed.has(person.user_id)){
+        result=await db.from('follows').delete().eq('follower_id',user.id).eq('following_id',person.user_id);
+      }else{
+        result=await db.from('follows').insert({follower_id:user.id,following_id:person.user_id});
+      }
+      if(result.error)alert(result.error.message);
+      await searchPeople();await loadStats();if(feedMode==='following')await loadPosts();
+    };
+    row.append(name,button);box.appendChild(row);
+  });
 }
 
 function togglePanel(id){
-const panel=el(id);
-panel.style.display=panel.style.display==='block'?'none':'block';
-if(panel.style.display==='block'){
-if(id==='notificationsPanel')loadNotifications();
-if(id==='messagesPanel')loadInbox();
-}
+  const panel=el(id);
+  if(!panel)return;
+  panel.style.display=panel.style.display==='block'?'none':'block';
+  if(panel.style.display==='block'){
+    panel.scrollIntoView({behavior:'smooth',block:'start'});
+    if(id==='notificationsPanel')loadNotifications();
+    if(id==='messagesPanel')loadInbox();
+  }
 }
 
 async function loadNotifications(){
-const box=el('notificationList');
-const {data,error}=await db.from('notifications').select('*').eq('recipient_id',user.id).order('created_at',{ascending:false}).limit(50);
-if(error){box.textContent=error.message;return;}
-box.replaceChildren();
-const items=data||[];
-el('unreadCount').textContent=items.filter(x=>!x.is_read).length;
-if(!items.length){box.textContent='No notifications yet.';return;}
-items.forEach(item=>{
-const row=document.createElement('div');row.className='notification-item';
-row.textContent=item.type==='like'?'❤️ Someone liked your post.':'💬 Someone commented on your post.';
-const read=document.createElement('button');read.textContent=item.is_read?'Read':'Mark as read';
-read.disabled=!!item.is_read;
-read.onclick=async()=>{
-const {error}=await db.from('notifications').update({is_read:true}).eq('id',item.id).eq('recipient_id',user.id);
-if(error)alert(error.message);else loadNotifications();
-};
-row.appendChild(read);box.appendChild(row);
-});
+  const box=el('notificationList');
+  const {data,error}=await db.from('notifications').select('*').eq('recipient_id',user.id).order('created_at',{ascending:false}).limit(50);
+  if(error){box.textContent=error.message;return;}
+  box.replaceChildren();
+  const items=data||[];
+  el('unreadCount').textContent=items.filter(x=>!x.is_read).length;
+  if(!items.length){box.textContent='No notifications yet.';return;}
+  items.forEach(item=>{
+    const row=document.createElement('div');row.className='notification-item';
+    row.textContent=item.type==='like'?'❤️ Someone liked your post.':'💬 Someone commented on your post.';
+    const read=document.createElement('button');read.textContent=item.is_read?'Read':'Mark as read';
+    read.disabled=!!item.is_read;
+    read.onclick=async()=>{
+      const {error}=await db.from('notifications').update({is_read:true}).eq('id',item.id).eq('recipient_id',user.id);
+      if(error)alert(error.message);else loadNotifications();
+    };
+    row.appendChild(read);box.appendChild(row);
+  });
 }
 
 async function markNotificationsRead(){
-const {error}=await db.from('notifications').update({is_read:true}).eq('recipient_id',user.id).eq('is_read',false);
-if(error)alert(error.message);else loadNotifications();
+  const {error}=await db.from('notifications').update({is_read:true}).eq('recipient_id',user.id).eq('is_read',false);
+  if(error)alert(error.message);else loadNotifications();
 }
 
 async function searchMessagePeople(){
-const term=el('messageSearch').value.trim();
-const box=el('messagePeople');
-if(term.length<2){box.textContent='Type at least 2 letters.';return;}
-box.textContent='Searching...';
-const {data,error}=await db.from('looply_directory').select('user_id,display_name').ilike('display_name','%'+term+'%').neq('user_id',user.id).limit(20);
-if(error){box.textContent=error.message;return;}
-box.replaceChildren();
-(data||[]).forEach(person=>{
-const button=document.createElement('button');
-button.textContent='Message '+person.display_name;
-button.onclick=()=>openChat(person);
-box.appendChild(button);
-});
-if(!data?.length)box.textContent='No members found.';
+  const term=el('messageSearch').value.trim();
+  const box=el('messagePeople');
+  if(term.length<2){box.textContent='Type at least 2 letters.';return;}
+  box.textContent='Searching...';
+  const {data,error}=await db.from('looply_directory').select('user_id,display_name').ilike('display_name','%'+term+'%').neq('user_id',user.id).limit(20);
+  if(error){box.textContent=error.message;return;}
+  box.replaceChildren();
+  (data||[]).forEach(person=>{
+    const button=document.createElement('button');
+    button.textContent='Message '+person.display_name;
+    button.onclick=()=>openChat(person);
+    box.appendChild(button);
+  });
+  if(!data?.length)box.textContent='No members found.';
 }
 
 async function loadInbox(){
-const box=el('inbox');
-const {data,error}=await db.from('messages').select('sender_id,receiver_id,content,created_at').or('sender_id.eq.'+user.id+',receiver_id.eq.'+user.id).order('created_at',{ascending:false}).limit(100);
-if(error){box.textContent=error.message;return;}
-const latest=new Map();
-(data||[]).forEach(m=>{const id=m.sender_id===user.id?m.receiver_id:m.sender_id;if(!latest.has(id))latest.set(id,m);});
-const ids=[...latest.keys()];
-box.replaceChildren();
-if(!ids.length){box.textContent='No conversations yet.';return;}
-const {data:people,error:peopleError}=await db.from('looply_directory').select('user_id,display_name').in('user_id',ids);
-if(peopleError){box.textContent=peopleError.message;return;}
-ids.forEach(id=>{
-const person=(people||[]).find(x=>x.user_id===id)||{user_id:id,display_name:'Looply member'};
-const button=document.createElement('button');
-button.textContent=person.display_name+' — '+(latest.get(id).content||'').slice(0,35);
-button.onclick=()=>openChat(person);
-box.appendChild(button);
-});
+  const box=el('inbox');
+  const {data,error}=await db.from('messages').select('sender_id,receiver_id,content,created_at').or('sender_id.eq.'+user.id+',receiver_id.eq.'+user.id).order('created_at',{ascending:false}).limit(100);
+  if(error){box.textContent=error.message;return;}
+  const latest=new Map();
+  (data||[]).forEach(m=>{const id=m.sender_id===user.id?m.receiver_id:m.sender_id;if(!latest.has(id))latest.set(id,m);});
+  const ids=[...latest.keys()];
+  box.replaceChildren();
+  if(!ids.length){box.textContent='No conversations yet.';return;}
+  const {data:people,error:peopleError}=await db.from('looply_directory').select('user_id,display_name').in('user_id',ids);
+  if(peopleError){box.textContent=peopleError.message;return;}
+  ids.forEach(id=>{
+    const person=(people||[]).find(x=>x.user_id===id)||{user_id:id,display_name:'Looply member'};
+    const button=document.createElement('button');
+    button.textContent=person.display_name+' — '+(latest.get(id).content||'').slice(0,35);
+    button.onclick=()=>openChat(person);
+    box.appendChild(button);
+  });
 }
 
 async function openChat(person){
-activeChat=person;
-el('chatWindow').style.display='block';
-el('chatName').textContent='Chat with '+person.display_name;
-await loadChat();
+  activeChat=person;
+  el('chatWindow').style.display='block';
+  el('chatName').textContent='Chat with '+person.display_name;
+  await loadChat();
 }
 
 function closeChat(){activeChat=null;el('chatWindow').style.display='none';}
 
 async function loadChat(){
-if(!activeChat)return;
-const other=activeChat.user_id;
-const filter='and(sender_id.eq.'+user.id+',receiver_id.eq.'+other+'),and(sender_id.eq.'+other+',receiver_id.eq.'+user.id+')';
-const {data,error}=await db.from('messages').select('*').or(filter).order('created_at',{ascending:true}).limit(200);
-const box=el('chatMessages');box.replaceChildren();
-if(error){box.textContent=error.message;return;}
-(data||[]).forEach(m=>{
-const bubble=document.createElement('div');
-bubble.className='bubble '+(m.sender_id===user.id?'mine':'theirs');
-bubble.textContent=m.content;
-box.appendChild(bubble);
-});
-box.scrollTop=box.scrollHeight;
-await db.from('messages').update({is_read:true}).eq('sender_id',other).eq('receiver_id',user.id).eq('is_read',false);
+  if(!activeChat)return;
+  const other=activeChat.user_id;
+  const filter='and(sender_id.eq.'+user.id+',receiver_id.eq.'+other+'),and(sender_id.eq.'+other+',receiver_id.eq.'+user.id+')';
+  const {data,error}=await db.from('messages').select('*').or(filter).order('created_at',{ascending:true}).limit(200);
+  const box=el('chatMessages');box.replaceChildren();
+  if(error){box.textContent=error.message;return;}
+  (data||[]).forEach(m=>{
+    const bubble=document.createElement('div');
+    bubble.className='bubble '+(m.sender_id===user.id?'mine':'theirs');
+    bubble.textContent=m.content;
+    box.appendChild(bubble);
+  });
+  box.scrollTop=box.scrollHeight;
+  await db.from('messages').update({is_read:true}).eq('sender_id',other).eq('receiver_id',user.id).eq('is_read',false);
 }
 
 el('sendMessageForm').addEventListener('submit',async e=>{
-e.preventDefault();
-if(!activeChat)return;
-const input=el('messageInput');
-const content=input.value.trim();
-if(!content)return;
-const button=e.target.querySelector('button');
-button.disabled=true;
-const {error}=await db.from('messages').insert({sender_id:user.id,receiver_id:activeChat.user_id,content});
-if(error)message('chatStatus',error.message);
-else{input.value='';message('chatStatus','');await loadChat();await loadInbox();}
-button.disabled=false;
+  e.preventDefault();
+  if(!activeChat)return;
+  const input=el('messageInput');
+  const content=input.value.trim();
+  if(!content)return;
+  const button=e.target.querySelector('button');
+  button.disabled=true;
+  const {error}=await db.from('messages').insert({sender_id:user.id,receiver_id:activeChat.user_id,content});
+  if(error)message('chatStatus',error.message);
+  else{input.value='';message('chatStatus','');await loadChat();await loadInbox();}
+  button.disabled=false;
 });
 
 async function restoreSession(){
-const {data,error}=await db.auth.getSession();
-if(!error&&data.session)await startApp();
+  const {data,error}=await db.auth.getSession();
+  if(!error&&data.session)await startApp();
 }
 restoreSession();
 setInterval(async()=>{
-if(!user)return;
-await loadNotifications();
-if(activeChat&&el('messagesPanel').style.display==='block')await loadChat();
+  if(!user)return;
+  await loadNotifications();
+  if(activeChat&&el('messagesPanel').style.display==='block')await loadChat();
 },15000);
 </script>
 </body>
