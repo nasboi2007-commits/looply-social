@@ -76,6 +76,72 @@ footer{text-align:center;padding:20px;color:#92839f;font-size:12px}
  .post img,.post video{height:68vh}
  .person{align-items:flex-start}
 }
+
+/* Looply short-video redesign */
+:root{--bg:#050505;--surface:#111;--surface2:#1b1b1b;--line:#292929;--pink:#ff3ca6;--purple:#8b5cf6;--muted:#bdbdbd}
+html,body{background:#050505;color:#fff;scroll-behavior:smooth}
+body{padding-bottom:calc(66px + env(safe-area-inset-bottom));font-family:Arial,Helvetica,sans-serif}
+header{height:54px;position:fixed;top:0;left:0;right:0;padding:7px 13px;background:linear-gradient(180deg,rgba(0,0,0,.8),transparent);border:0;backdrop-filter:none;z-index:100}
+.logo{font-size:25px;color:#fff;letter-spacing:-1.2px;text-shadow:0 1px 12px #8b5cf6}
+header button{background:rgba(30,30,30,.68);border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:8px 11px}
+#welcome{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px 16px;background:radial-gradient(ellipse at 50% 20%,rgba(139,92,246,.28),transparent 55%),#08060c}
+#welcome h2{font-size:30px;letter-spacing:-1px}
+.auth,.panel,.feature{background:#141019;border:1px solid #30233d;border-radius:20px;box-shadow:0 16px 50px rgba(0,0,0,.3)}
+.auth{width:min(100%,420px);padding:22px}
+input,textarea{background:#211a29;border:1px solid #40344b;color:#fff;border-radius:13px}
+button{font-weight:700;transition:transform .15s,filter .15s}
+button:active{transform:scale(.96)}
+.submit{background:linear-gradient(100deg,#7c3aed,#ec4899);border-radius:13px}
+#appArea{display:block;max-width:none;margin:0;padding-top:48px}
+#postsSection{display:block;max-width:none;margin:0;padding:0}
+#postsSection>h2{display:none}
+.feed-tabs{position:fixed;top:49px;left:0;right:0;z-index:90;justify-content:center;gap:24px;margin:0;padding:9px 10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.68),transparent);border:0;backdrop-filter:none}
+.feed-tabs button{flex:0 0 auto;font-size:15px;padding:7px 3px;color:rgba(255,255,255,.72);border:0}
+.feed-tabs button.active{color:#fff;border-bottom:3px solid var(--pink)}
+#postsFeed{height:calc(100dvh - 113px);overflow-y:auto;overscroll-behavior-y:contain;scroll-snap-type:y mandatory;padding:0;margin:0;scrollbar-width:none}
+#postsFeed::-webkit-scrollbar{display:none}
+.post{position:relative;width:100%;height:calc(100dvh - 113px);min-height:500px;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:#080808;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;text-align:left}
+.post:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.3),transparent 24%,transparent 55%,rgba(0,0,0,.68) 100%)}
+.post>img,.post>video{position:absolute;inset:0;width:100%;height:100%;max-height:none;object-fit:cover;margin:0;border-radius:0;background:#080808}
+.post>video{object-fit:cover}
+.post-author{position:absolute;z-index:3;left:14px;right:90px;bottom:92px;margin:0;color:#fff;font-size:15px;text-shadow:0 1px 4px #000}
+.post-caption{position:absolute;z-index:3;left:14px;right:86px;bottom:48px;margin:0;color:#fff;font-size:14px;line-height:1.35;text-shadow:0 1px 4px #000;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.post>button{position:absolute;z-index:4;right:12px;width:54px;min-height:48px;padding:7px 3px;margin:0;border:0;background:transparent;color:#fff;font-size:12px;text-shadow:0 1px 5px #000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.post>button:first-of-type{bottom:190px}
+.post .comment-toggle{bottom:126px}
+.post .share-button{bottom:68px}
+.post .comment-area{display:none;position:absolute;z-index:10;left:0;right:0;bottom:0;max-height:62%;overflow:auto;margin:0;padding:18px 14px calc(18px + env(safe-area-inset-bottom));border:0;border-radius:20px 20px 0 0;background:#17131d;box-shadow:0 -10px 35px #0008;color:#fff}
+.post .comment-area.open{display:block}
+.post .comment-area strong{display:block;margin-bottom:12px}
+.post .comment-item{background:#28212f;color:#fff;border-radius:12px}
+.post .comment-form{display:flex;gap:7px;margin-top:10px}
+.post .comment-form textarea{min-height:42px;margin:0;flex:1}
+.post .comment-form button{position:static;width:auto;min-height:42px;padding:8px 13px;background:#8b5cf6;border-radius:10px;text-shadow:none}
+#bottomNav{height:calc(62px + env(safe-area-inset-bottom));padding:6px 3px calc(6px + env(safe-area-inset-bottom));background:rgba(10,10,10,.98);border-top:1px solid #262626}
+#bottomNav button{color:#aaa;font-size:10px;min-width:58px;gap:4px}
+#bottomNav button .navIcon{font-size:23px;line-height:24px}
+#bottomNav button.active{color:#fff}
+#bottomNav button.active .navIcon{color:#ec4899}
+#profile,#peopleSection,#createSection,#notificationsPanel,#messagesPanel{max-width:680px;margin:18px auto;padding:12px}
+#profile{background:#15121b;border:1px solid #30233d;border-radius:20px;text-align:center}
+#profile h2{margin-top:8px}
+#avatarImage{border:3px solid #ec4899}
+#peopleSection .panel,#createPanel,#notificationsPanel .panel,#messagesPanel .panel{background:#15121b;border:1px solid #30233d;border-radius:18px}
+#peopleSection{padding-top:14px}
+#peopleSection h2,#createPanel h2,#notificationsPanel h2,#messagesPanel h2{margin-bottom:12px}
+.person,.notification-item{background:#241d2b;border-radius:13px}
+#chatMessages{background:#0c0a10}
+footer{display:none}
+@media(min-width:700px){
+ #appArea{max-width:520px;margin:0 auto;padding-top:48px}
+ header{left:calc(50% - 260px);right:calc(50% - 260px)}
+ .feed-tabs{left:calc(50% - 260px);right:calc(50% - 260px)}
+ #postsFeed{height:calc(100dvh - 113px)}
+ .post{height:calc(100dvh - 113px);max-width:520px}
+ #bottomNav{left:calc(50% - 260px);right:calc(50% - 260px)}
+}
+@media(max-width:430px){.post{min-height:440px}.post-author{bottom:88px}.post-caption{bottom:43px}}
+
 </style>
 </head>
 <body>
@@ -330,7 +396,7 @@ function changeFeed(value){
 
 async function loadPosts(){
   const box=el('postsFeed');
-  box.textContent='Loading posts...';
+  box.textContent='Loading videos...';
   const {data:allPosts,error}=await db.from('posts').select('*').order('created_at',{ascending:false});
   if(error){box.textContent=error.message;return;}
   let posts=allPosts||[];
@@ -346,101 +412,64 @@ async function loadPosts(){
   if(commentsError){box.textContent=commentsError.message;return;}
   box.replaceChildren();
   if(posts.length===0){
-    box.textContent=feedMode==='following'?'No posts from people you follow yet. Follow members to fill this feed! 💜':'No posts yet. Be the first to share!';
-    return;
+    const empty=document.createElement('div');empty.className='post empty-post';
+    empty.style.cssText='display:grid;place-items:center;padding:30px;text-align:center;color:white';
+    empty.textContent=feedMode==='following'?'No posts from people you follow yet. Discover members and follow them!':'No posts yet. Be the first to share on Looply!';
+    box.appendChild(empty);return;
   }
   for(const post of posts){
-    const card=document.createElement('div');
-    card.className='post';
-    const author=document.createElement('p');
-    author.className='post-author';
-    author.textContent=post.user_id===user.id?'You':'Looply member';
-    card.appendChild(author);
-    const caption=document.createElement('p');
-    caption.className='post-caption';
-    caption.textContent=post.caption||'';
-    card.appendChild(caption);
+    const card=document.createElement('article');card.className='post';
     const video=post.media_type==='video'||(!post.image&&post.video);
     const url=video?post.video:post.image;
     if(url){
-      const media=document.createElement(video?'video':'img');
-      media.src=url;
-      if(video){media.controls=true;media.playsInline=true;media.preload='metadata';}
+      const media=document.createElement(video?'video':'img');media.src=url;
+      if(video){media.playsInline=true;media.loop=true;media.muted=true;media.autoplay=true;media.preload='metadata';media.setAttribute('playsinline','');}
       else{media.alt='Looply post image';media.loading='lazy';}
       card.appendChild(media);
     }
-    const postLikes=likes.filter(x=>x.post_id===post.id);
-    let liked=postLikes.some(x=>x.user_id===user.id);
-    const like=document.createElement('button');
-    function drawLike(){like.textContent=(liked?'❤️':'🤍')+' Like ('+postLikes.length+')';}
+    const author=document.createElement('p');author.className='post-author';
+    author.textContent=(post.user_id===user.id?'You':'Looply creator')+'  ·  Looply';card.appendChild(author);
+    const caption=document.createElement('p');caption.className='post-caption';caption.textContent=post.caption||' ';card.appendChild(caption);
+    const postLikes=likes.filter(x=>x.post_id===post.id);let liked=postLikes.some(x=>x.user_id===user.id);
+    const like=document.createElement('button');like.className='like-button';
+    function drawLike(){like.innerHTML='<span style="font-size:27px">'+(liked?'❤️':'♡')+'</span><span>'+(postLikes.length)+'</span>';}
     drawLike();
     like.onclick=async()=>{
       like.disabled=true;
-      if(liked){
-        const {error}=await db.from('likes').delete().eq('post_id',post.id).eq('user_id',user.id);
-        if(error)alert(error.message);
-        else{liked=false;const i=postLikes.findIndex(x=>x.user_id===user.id);if(i>=0)postLikes.splice(i,1);drawLike();}
-      }else{
-        const {error}=await db.from('likes').insert({post_id:post.id,user_id:user.id});
-        if(error)alert(error.message);
-        else{liked=true;postLikes.push({user_id:user.id});drawLike();}
-      }
+      if(liked){const {error}=await db.from('likes').delete().eq('post_id',post.id).eq('user_id',user.id);if(error)alert(error.message);else{liked=false;const i=postLikes.findIndex(x=>x.user_id===user.id);if(i>=0)postLikes.splice(i,1);drawLike();}}
+      else{const {error}=await db.from('likes').insert({post_id:post.id,user_id:user.id});if(error)alert(error.message);else{liked=true;postLikes.push({user_id:user.id});drawLike();}}
       like.disabled=false;
-    };
-    card.appendChild(like);
-
-    const area=document.createElement('div');
-    area.className='comment-area';
-    const heading=document.createElement('strong');
-    heading.textContent='💬 Comments';
-    area.appendChild(heading);
+    };card.appendChild(like);
+    const area=document.createElement('div');area.className='comment-area';
+    const heading=document.createElement('strong');heading.textContent='Comments';area.appendChild(heading);
     const list=document.createElement('div');
     function drawComments(){
       list.replaceChildren();
       comments.filter(x=>x.post_id===post.id).forEach(comment=>{
-        const item=document.createElement('div');
-        item.className='comment-item';
+        const item=document.createElement('div');item.className='comment-item';
         item.textContent=(comment.user_id===user.id?'You':'Looply member')+': '+comment.content;
-        if(comment.user_id===user.id){
-          const del=document.createElement('button');
-          del.textContent='Delete';
-          del.onclick=async()=>{
-            const {error}=await db.from('comments').delete().eq('id',comment.id).eq('user_id',user.id);
-            if(error)alert(error.message);
-            else{const i=comments.findIndex(x=>x.id===comment.id);if(i>=0)comments.splice(i,1);drawComments();}
-          };
-          item.appendChild(del);
-        }
+        if(comment.user_id===user.id){const del=document.createElement('button');del.textContent='Delete';del.style.position='static';del.style.width='auto';del.onclick=async()=>{const {error}=await db.from('comments').delete().eq('id',comment.id).eq('user_id',user.id);if(error)alert(error.message);else{const i=comments.findIndex(x=>x.id===comment.id);if(i>=0)comments.splice(i,1);drawComments();}};item.appendChild(del);}
         list.appendChild(item);
       });
-      if(!list.childNodes.length)list.textContent='No comments yet.';
+      if(!list.childNodes.length)list.textContent='No comments yet. Be the first!';
     }
-    drawComments();
-    area.appendChild(list);
-    const form=document.createElement('form');
-    form.className='comment-form';
-    const input=document.createElement('textarea');
-    input.placeholder='Write a comment...';
-    input.required=true;
-    const send=document.createElement('button');
-    send.textContent='Send';
-    form.append(input,send);
-    form.onsubmit=async e=>{
-      e.preventDefault();
-      const content=input.value.trim();
-      if(!content)return;
-      send.disabled=true;
-      const {data,error}=await db.from('comments').insert({post_id:post.id,user_id:user.id,content}).select().single();
-      if(error)alert(error.message);
-      else{comments.push(data);input.value='';drawComments();}
-      send.disabled=false;
-    };
-    area.appendChild(form);
-    card.appendChild(area);
-    box.appendChild(card);
+    drawComments();area.appendChild(list);
+    const form=document.createElement('form');form.className='comment-form';
+    const input=document.createElement('textarea');input.placeholder='Add a comment...';input.required=true;
+    const send=document.createElement('button');send.textContent='Send';form.append(input,send);
+    form.onsubmit=async e=>{e.preventDefault();const content=input.value.trim();if(!content)return;send.disabled=true;const {data,error}=await db.from('comments').insert({post_id:post.id,user_id:user.id,content}).select().single();if(error)alert(error.message);else{comments.push(data);input.value='';drawComments();}send.disabled=false;};
+    area.appendChild(form);card.appendChild(area);
+    const commentToggle=document.createElement('button');commentToggle.className='comment-toggle';commentToggle.innerHTML='<span style="font-size:25px">▢</span><span>'+comments.filter(x=>x.post_id===post.id).length+'</span>';
+    commentToggle.onclick=()=>area.classList.toggle('open');card.appendChild(commentToggle);
+    const share=document.createElement('button');share.className='share-button';share.innerHTML='<span style="font-size:25px">↗</span><span>Share</span>';
+    share.onclick=async()=>{const shareData={title:'Looply',text:post.caption||'Watch this on Looply',url:location.href};try{if(navigator.share)await navigator.share(shareData);else if(navigator.clipboard){await navigator.clipboard.writeText(location.href);alert('Looply link copied!');}else alert('Share is not available on this browser.');}catch(e){if(e.name!=='AbortError')alert('Could not share this post.');}};
+    card.appendChild(share);box.appendChild(card);
   }
+  // Play only the video currently visible in the feed.
+  if(window.looplyVideoObserver)window.looplyVideoObserver.disconnect();
+  window.looplyVideoObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{const v=entry.target;if(entry.isIntersecting&&entry.intersectionRatio>.65){v.play().catch(()=>{});}else v.pause();}),{root:box,threshold:[0,.65,1]});
+  box.querySelectorAll('video').forEach(v=>window.looplyVideoObserver.observe(v));
 }
-
 async function loadStats(){
   const [a,b]=await Promise.all([
     db.from('follows').select('id',{count:'exact',head:true}).eq('following_id',user.id),
