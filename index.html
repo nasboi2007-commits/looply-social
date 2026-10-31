@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,8 +10,9 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Arial,sans-serif;background:#f7f4ff;color:#24143d}
-header{padding:20px 7%;background:white}
+header{padding:15px 5%;background:white;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .logo{font-size:28px;font-weight:900;color:#793bdf}
+.header-actions{display:flex;align-items:center;gap:8px}
 .hero{padding:65px 7%;text-align:center;color:white;background:linear-gradient(120deg,#6334d9,#a33fda,#f044a5)}
 .hero h1{font-size:clamp(35px,7vw,60px);margin-bottom:18px}
 .hero p{font-size:18px;line-height:1.6}
@@ -28,7 +30,7 @@ button:disabled{opacity:.6;cursor:wait}
 .tabs button{flex:1;background:#eee7ff;color:#6334d9}
 .tabs button.active{background:#793bdf;color:white}
 .submit{width:100%;padding:15px;background:linear-gradient(90deg,#793bdf,#ed45a5);font-weight:bold}
-#message,#postMessage{margin-top:12px}
+#message,#postMessage{margin-top:12px;overflow-wrap:anywhere}
 footer{text-align:center;padding:25px;color:#766987}
 .post{background:white;padding:15px;margin:15px auto;max-width:500px;border-radius:15px;text-align:left}
 .post img,.post video{width:100%;max-height:400px;object-fit:contain;margin-top:10px;border-radius:10px}
@@ -43,12 +45,30 @@ footer{text-align:center;padding:25px;color:#766987}
 .comment-form button{margin:5px 0}
 .delete-comment{background:#ed45a5;font-size:12px;padding:6px 10px}
 .comment-status{font-size:13px;color:#766987;margin-top:5px}
+#notificationButton{margin:0;background:#f0e8ff;color:#6334d9;font-weight:bold}
+#notificationCount{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:20px;background:#ed45a5;color:white;font-size:12px;margin-left:5px}
+#notificationsPanel{display:none;max-width:600px;margin:20px auto;background:white;padding:20px;border-radius:16px;text-align:left}
+.notification-item{padding:13px;margin:9px 0;border-radius:12px;background:#f7f4ff;border-left:4px solid #793bdf;overflow-wrap:anywhere}
+.notification-item.unread{background:#f0e8ff;border-left-color:#ed45a5}
+.notification-item p{line-height:1.5}
+.notification-time{font-size:12px;color:#766987;margin-top:5px}
+.notification-empty{color:#766987;padding:15px 0}
+@media(max-width:420px){
+.logo{font-size:23px}
+header{padding:12px 4%}
+#notificationButton{padding:10px;font-size:12px}
+}
 </style>
 </head>
 
 <body>
 
-<header><div class="logo">Looply ✨</div></header>
+<header>
+<div class="logo">Looply ✨</div>
+<div class="header-actions">
+<button type="button" id="notificationButton" onclick="toggleNotifications()">🔔 Notifications <span id="notificationCount">0</span></button>
+</div>
+</header>
 
 <div class="hero">
 <h1>Your people. Your moments. Your Loop.</h1>
@@ -93,6 +113,13 @@ footer{text-align:center;padding:25px;color:#766987}
 <button type="button" onclick="logout()" style="background:#ed45a5">Log out</button>
 </section>
 
+<section id="notificationsPanel">
+<h2>🔔 Your notifications</h2>
+<p id="notificationStatus" class="notification-empty">Loading notifications...</p>
+<div id="notificationsList"></div>
+<button type="button" onclick="markAllNotificationsRead()">Mark all as read</button>
+</section>
+
 <section id="postsSection" style="display:none">
 <h2>Share a moment 💜</h2>
 <textarea id="postCaption" placeholder="What's happening?"></textarea>
@@ -116,6 +143,8 @@ SUPABASE_KEY,
 );
 
 let currentMode='signup';
+let notificationPollingStarted=false;
+let notificationRequestBusy=false;
 
 function showForm(mode){
 currentMode=mode;
@@ -143,7 +172,10 @@ const {data:profile}=await supabaseClient.from('profiles')
 if(profile?.avatar_url){
 document.getElementById('avatarImage').src=profile.avatar_url;
 }
+
 await loadPosts();
+await loadNotifications();
+startNotificationPolling();
 }
 
 async function editProfile(){
@@ -504,6 +536,130 @@ commentArea.appendChild(status);
 card.appendChild(commentArea);
 feed.appendChild(card);
 });
+}
+
+/* NOTIFICATIONS */
+
+function toggleNotifications(){
+const panel=document.getElementById('notificationsPanel');
+const opening=panel.style.display!=='block';
+panel.style.display=opening?'block':'none';
+if(opening)loadNotifications();
+}
+
+async function loadNotifications(){
+if(notificationRequestBusy)return;
+notificationRequestBusy=true;
+
+const list=document.getElementById('notificationsList');
+const status=document.getElementById('notificationStatus');
+const count=document.getElementById('notificationCount');
+
+try{
+const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+if(userError||!user)return;
+
+const {data:items,error}=await supabaseClient
+.from('notifications')
+.select('id,actor_id,post_id,comment_id,type,is_read,created_at')
+.eq('recipient_id',user.id)
+.order('created_at',{ascending:false})
+.limit(50);
+
+if(error)throw error;
+
+const notifications=items||[];
+const unread=notifications.filter(item=>!item.is_read).length;
+
+count.textContent=String(unread);
+count.style.display=unread>0?'inline-flex':'none';
+
+list.replaceChildren();
+
+if(notifications.length===0){
+status.textContent='You have no notifications yet. When someone likes or comments on your posts, you will see it here. 💜';
+status.style.display='block';
+return;
+}
+
+status.textContent='';
+status.style.display='none';
+
+notifications.forEach(item=>{
+const row=document.createElement('div');
+row.className='notification-item'+(item.is_read?'':' unread');
+
+const message=document.createElement('p');
+message.textContent=item.type==='like'
+?'❤️ Someone liked your post.'
+:'💬 Someone commented on your post.';
+
+const time=document.createElement('p');
+time.className='notification-time';
+const date=new Date(item.created_at);
+time.textContent=Number.isNaN(date.getTime())?'':date.toLocaleString();
+
+const markButton=document.createElement('button');
+markButton.type='button';
+markButton.textContent=item.is_read?'Read':'Mark as read';
+markButton.disabled=!!item.is_read;
+markButton.style.fontSize='12px';
+markButton.style.padding='7px 10px';
+
+markButton.addEventListener('click',async()=>{
+markButton.disabled=true;
+
+const {error:updateError}=await supabaseClient
+.from('notifications')
+.update({is_read:true})
+.eq('id',item.id)
+.eq('recipient_id',user.id);
+
+if(updateError){
+markButton.disabled=false;
+alert('Could not update notification: '+updateError.message);
+return;
+}
+
+loadNotifications();
+});
+
+row.appendChild(message);
+row.appendChild(time);
+row.appendChild(markButton);
+list.appendChild(row);
+});
+
+}catch(error){
+status.textContent='Could not load notifications: '+error.message;
+status.style.display='block';
+}finally{
+notificationRequestBusy=false;
+}
+}
+
+async function markAllNotificationsRead(){
+const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+if(userError||!user){alert('Please log in first.');return;}
+
+const {error}=await supabaseClient
+.from('notifications')
+.update({is_read:true})
+.eq('recipient_id',user.id)
+.eq('is_read',false);
+
+if(error){
+alert('Could not mark notifications as read: '+error.message);
+return;
+}
+
+await loadNotifications();
+}
+
+function startNotificationPolling(){
+if(notificationPollingStarted)return;
+notificationPollingStarted=true;
+window.setInterval(loadNotifications,15000);
 }
 
 /* AUTHENTICATION */
