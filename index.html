@@ -63,12 +63,18 @@ footer{text-align:center;padding:25px;color:#766987}
 #messageComposer{display:flex;gap:6px;align-items:center;margin-top:10px}
 #messageComposer textarea{flex:1;min-height:48px;margin:0;resize:vertical}
 #messageComposer button{margin:0}
+.follow-person{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f7f4ff;padding:12px;border-radius:12px;margin:8px 0;text-align:left}
+.follow-person small{display:block;color:#766987;margin-top:4px}
+.follow-person button{min-width:95px}
+.follow-stats{display:flex;justify-content:center;gap:25px;flex-wrap:wrap;margin:15px 0}
+.follow-stats p{background:#f0e8ff;padding:12px 20px;border-radius:12px}
 @media(max-width:420px){
 .logo{font-size:23px}
 header{padding:12px 4%}
 #notificationButton,#messagesButton{padding:9px;font-size:11px}
 #messageComposer{flex-direction:column}
 #messageComposer button{width:100%}
+.follow-person{align-items:flex-start}
 }
 </style>
 </head>
@@ -119,6 +125,18 @@ header{padding:12px 4%}
 <button type="button" onclick="uploadAvatar()">Upload photo</button>
 <h3 id="profileName">Your Name</h3>
 <p id="profileEmail"></p>
+
+<div class="follow-stats">
+<p><strong id="myFollowerCount">0</strong><br>Followers</p>
+<p><strong id="myFollowingCount">0</strong><br>Following</p>
+</div>
+
+<div style="max-width:500px;margin:18px auto;text-align:left">
+<h3>Find people to follow 💜</h3>
+<input id="followSearch" type="search" placeholder="Search Looply members..." oninput="searchLooplyMembers()">
+<div id="followResults"><p class="message-muted">Search for members by name.</p></div>
+</div>
+
 <p>Welcome to my Looply profile!</p>
 <button type="button" onclick="editProfile()">Edit profile</button>
 <button type="button" onclick="logout()" style="background:#ed45a5">Log out</button>
@@ -177,6 +195,7 @@ let notificationRequestBusy=false;
 let selectedChatUser=null;
 let messageSearchBusy=false;
 let messagePollingStarted=false;
+let followSearchBusy=false;
 
 function showForm(mode){
 currentMode=mode;
@@ -206,6 +225,7 @@ document.getElementById('avatarImage').src=profile.avatar_url;
 }
 
 await loadPosts();
+await loadMyFollowStats();
 await loadNotifications();
 startNotificationPolling();
 startMessagePolling();
@@ -482,6 +502,135 @@ feed.appendChild(card);
 });
 }
 
+/* FOLLOW SYSTEM */
+async function loadMyFollowStats(){
+const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+if(userError||!user)return;
+
+const [followers,following]=await Promise.all([
+supabaseClient.from('follows').select('id',{count:'exact',head:true}).eq('following_id',user.id),
+supabaseClient.from('follows').select('id',{count:'exact',head:true}).eq('follower_id',user.id)
+]);
+
+if(followers.error||following.error){
+console.log('Follow stats:',followers.error?.message||following.error?.message);
+return;
+}
+document.getElementById('myFollowerCount').textContent=String(followers.count||0);
+document.getElementById('myFollowingCount').textContent=String(following.count||0);
+}
+
+async function searchLooplyMembers(){
+if(followSearchBusy)return;
+const term=document.getElementById('followSearch').value.trim();
+const box=document.getElementById('followResults');
+
+if(term.length<2){
+box.textContent='Type at least 2 letters to search.';
+return;
+}
+
+followSearchBusy=true;
+box.textContent='Searching...';
+
+try{
+const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+if(userError||!user)throw new Error('Please log in first.');
+
+const {data:people,error}=await supabaseClient.from('looply_directory')
+.select('user_id,display_name')
+.ilike('display_name','%'+term+'%')
+.neq('user_id',user.id)
+.limit(20);
+
+if(error)throw error;
+
+box.replaceChildren();
+
+if(!people||people.length===0){
+box.textContent='No members found with that name.';
+return;
+}
+
+const ids=people.map(person=>person.user_id);
+
+const [myFollows,allFollowers]=await Promise.all([
+supabaseClient.from('follows').select('following_id')
+.eq('follower_id',user.id).in('following_id',ids),
+supabaseClient.from('follows').select('follower_id,following_id')
+.in('following_id',ids)
+]);
+
+if(myFollows.error)throw myFollows.error;
+if(allFollowers.error)throw allFollowers.error;
+
+const followed=new Set((myFollows.data||[]).map(item=>item.following_id));
+const counts=new Map();
+
+(allFollowers.data||[]).forEach(item=>{
+counts.set(item.following_id,(counts.get(item.following_id)||0)+1);
+});
+
+people.forEach(person=>{
+const card=document.createElement('div');
+card.className='follow-person';
+
+const details=document.createElement('div');
+const name=document.createElement('strong');
+name.textContent=person.display_name||'Looply member';
+
+const count=document.createElement('small');
+count.textContent=(counts.get(person.user_id)||0)+' followers';
+
+details.appendChild(name);
+details.appendChild(count);
+
+const button=document.createElement('button');
+button.type='button';
+button.textContent=followed.has(person.user_id)?'Following':'Follow';
+button.style.background=followed.has(person.user_id)?'#eee7ff':'#793bdf';
+button.style.color=followed.has(person.user_id)?'#6334d9':'white';
+
+button.addEventListener('click',async()=>{
+if(button.disabled)return;
+button.disabled=true;
+
+try{
+if(followed.has(person.user_id)){
+const {error:removeError}=await supabaseClient.from('follows')
+.delete()
+.eq('follower_id',user.id)
+.eq('following_id',person.user_id);
+if(removeError)throw removeError;
+}else{
+const {error:addError}=await supabaseClient.from('follows').insert({
+follower_id:user.id,
+following_id:person.user_id
+});
+if(addError)throw addError;
+}
+
+await loadMyFollowStats();
+await searchLooplyMembers();
+
+}catch(actionError){
+alert('Could not update follow: '+actionError.message);
+button.disabled=false;
+}
+});
+
+card.appendChild(details);
+card.appendChild(button);
+box.appendChild(card);
+});
+
+}catch(error){
+box.textContent='Search failed: '+error.message;
+}finally{
+followSearchBusy=false;
+}
+}
+
 /* NOTIFICATIONS */
 function toggleNotifications(){
 const panel=document.getElementById('notificationsPanel');
@@ -516,6 +665,7 @@ status.textContent='You have no notifications yet. When someone likes or comment
 status.style.display='block';
 return;
 }
+
 status.textContent='';status.style.display='none';
 
 notifications.forEach(item=>{
@@ -764,6 +914,16 @@ emailRedirectTo:'https://nasboi2007-commits.github.io/looply-social/'
 }
 });
 if(error)throw error;
+
+if(data.user){
+const {error:directoryError}=await supabaseClient.from('looply_directory')
+.upsert({
+user_id:data.user.id,
+display_name:name||'Looply User'
+});
+if(directoryError)console.log('Directory setup:',directoryError.message);
+}
+
 if(data.session){
 message.textContent='Account created successfully!';
 await showProfile();
