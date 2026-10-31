@@ -835,6 +835,173 @@ async function restoreSession(){
   const {data,error}=await db.auth.getSession();
   if(!error&&data.session)await startApp();
 }
+/* LOOPLY USERNAME + BLACK AVATAR PATCH
+   Paste this entire block immediately BEFORE the line: restoreSession();
+   inside your existing index.html <script>.
+*/
+async function looplyUserCards(ids){
+  const clean=[...new Set((ids||[]).filter(Boolean))];
+  if(!clean.length)return new Map();
+  const [directoryResult,profileResult]=await Promise.all([
+    db.from('looply_directory').select('user_id,display_name').in('user_id',clean),
+    db.from('profiles').select('id,avatar_url').in('id',clean)
+  ]);
+  const directory=directoryResult.data||[];
+  const profiles=profileResult.data||[];
+  const result=new Map();
+  clean.forEach(id=>{
+    const person=directory.find(x=>x.user_id===id);
+    const profile=profiles.find(x=>x.id===id);
+    result.set(id,{
+      name:(person?.display_name||(id===user?.id?(user.user_metadata?.full_name||'You'):'User')).trim(),
+      avatar:profile?.avatar_url||''
+    });
+  });
+  return result;
+}
+function looplyAvatar(url,size){
+  const img=document.createElement('img');
+  img.alt='';
+  img.src=url||'';
+  img.style.cssText=`width:${size}px;height:${size}px;min-width:${size}px;object-fit:cover;border-radius:50%;background:#000;border:1px solid #444;display:inline-block;margin:0;vertical-align:middle;`;
+  if(!url)img.style.visibility='hidden';
+  const wrap=document.createElement('span');
+  wrap.style.cssText=`width:${size}px;height:${size}px;min-width:${size}px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#000;border:1px solid #444;overflow:hidden;vertical-align:middle;`;
+  if(url)wrap.appendChild(img);
+  return wrap;
+}
+
+/* Posts and comments: show the actual profile name and photo. */
+const looplyOriginalLoadPosts=loadPosts;
+loadPosts=async function(){
+  await looplyOriginalLoadPosts();
+  try{
+    const postNodes=[...document.querySelectorAll('#postsFeed .post[data-post-id]')];
+    const postIds=postNodes.map(x=>x.dataset.postId);
+    if(!postIds.length)return;
+    const [postResult,commentResult]=await Promise.all([
+      db.from('posts').select('id,user_id').in('id',postIds),
+      db.from('comments').select('post_id,user_id,content').in('post_id',postIds).order('created_at')
+    ]);
+    const posts=postResult.data||[],comments=commentResult.data||[];
+    const cards=await looplyUserCards([...posts.map(x=>x.user_id),...comments.map(x=>x.user_id)]);
+    postNodes.forEach(node=>{
+      const post=posts.find(x=>String(x.id)===String(node.dataset.postId));
+      if(!post)return;
+      const author=node.querySelector('.post-author');
+      if(author){
+        const card=cards.get(post.user_id)||{name:'User',avatar:''};
+        author.replaceChildren(looplyAvatar(card.avatar,34));
+        const label=document.createElement('span');
+        label.textContent=post.user_id===user.id?'You':card.name;
+        author.appendChild(label);
+        author.style.cssText+='display:flex;align-items:center;gap:8px;';
+      }
+      const commentRows=[...node.querySelectorAll('.comment-item')];
+      const postComments=comments.filter(x=>String(x.post_id)===String(post.id));
+      commentRows.forEach((row,index)=>{
+        const comment=postComments[index];
+        if(!comment)return;
+        const card=cards.get(comment.user_id)||{name:'User',avatar:''};
+        const oldText=[...row.childNodes].find(x=>x.nodeType===Node.TEXT_NODE);
+        if(oldText)oldText.nodeValue=(comment.user_id===user.id?'You':card.name)+': '+comment.content;
+        else row.insertBefore(document.createTextNode((comment.user_id===user.id?'You':card.name)+': '+comment.content),row.firstChild);
+        row.insertBefore(looplyAvatar(card.avatar,26),row.firstChild);
+      });
+    });
+  }catch(error){console.warn('Looply profile labels:',error);}
+};
+
+/* People search: add profile pictures beside real names. */
+const looplyOriginalSearchPeople=searchPeople;
+searchPeople=async function(){
+  await looplyOriginalSearchPeople();
+  try{
+    const term=el('followSearch').value.trim();
+    if(term.length<2)return;
+    const {data}=await db.from('looply_directory').select('user_id,display_name').ilike('display_name','%'+term+'%').neq('user_id',user.id).limit(20);
+    const people=data||[],cards=await looplyUserCards(people.map(x=>x.user_id));
+    [...el('peopleResults').querySelectorAll('.person')].forEach((row,index)=>{
+      const person=people[index];if(!person)return;
+      const card=cards.get(person.user_id);
+      const name=row.querySelector('strong');
+      if(name)name.textContent=card?.name||person.display_name||'User';
+      row.insertBefore(looplyAvatar(card?.avatar,30),row.firstChild);
+    });
+  }catch(error){console.warn('Looply people pictures:',error);}
+};
+
+/* Inbox: use each conversation owner's real profile details. */
+const looplyOriginalLoadInbox=loadInbox;
+loadInbox=async function(){
+  await looplyOriginalLoadInbox();
+  try{
+    const {data}=await db.from('messages').select('sender_id,receiver_id,created_at').or('sender_id.eq.'+user.id+',receiver_id.eq.'+user.id).order('created_at',{ascending:false}).limit(100);
+    const latest=new Map();
+    (data||[]).forEach(m=>{const id=m.sender_id===user.id?m.receiver_id:m.sender_id;if(!latest.has(id))latest.set(id,m);});
+    const ids=[...latest.keys()],cards=await looplyUserCards(ids);
+    [...el('inbox').querySelectorAll('.inbox-person')].forEach((button,index)=>{
+      const id=ids[index];if(!id)return;
+      const card=cards.get(id)||{name:'User',avatar:''};
+      const old=button.querySelector('.inbox-avatar');
+      if(old)old.replaceWith(looplyAvatar(card.avatar,48));
+      const name=button.querySelector('.inbox-copy strong');
+      if(name)name.textContent=card.name;
+    });
+  }catch(error){console.warn('Looply inbox pictures:',error);}
+};
+
+/* Message search: show real names and profile pictures. */
+const looplyOriginalSearchMessagePeople=searchMessagePeople;
+searchMessagePeople=async function(){
+  await looplyOriginalSearchMessagePeople();
+  try{
+    const term=el('messageSearch').value.trim();if(term.length<2)return;
+    const {data}=await db.from('looply_directory').select('user_id,display_name').ilike('display_name','%'+term+'%').neq('user_id',user.id).limit(20);
+    const people=data||[],cards=await looplyUserCards(people.map(x=>x.user_id));
+    [...el('messagePeople').querySelectorAll('.inbox-person')].forEach((button,index)=>{
+      const person=people[index];if(!person)return;
+      const card=cards.get(person.user_id)||{name:person.display_name||'User',avatar:''};
+      const old=button.querySelector('.inbox-avatar');
+      if(old)old.replaceWith(looplyAvatar(card.avatar,48));
+      const name=button.querySelector('.inbox-copy strong');
+      if(name)name.textContent=card.name;
+    });
+  }catch(error){console.warn('Looply message search pictures:',error);}
+};
+
+/* Followers and following: real names and photos, black when no photo exists. */
+const looplyOriginalOpenFollowList=openFollowList;
+openFollowList=async function(kind){
+  await looplyOriginalOpenFollowList(kind);
+  try{
+    const followers=kind==='followers';
+    const column=followers?'follower_id':'following_id';
+    const matchColumn=followers?'following_id':'follower_id';
+    const {data}=await db.from('follows').select(column).eq(matchColumn,user.id).order('created_at',{ascending:false});
+    const ids=[...new Set((data||[]).map(x=>x[column]).filter(Boolean))];
+    const cards=await looplyUserCards(ids);
+    [...el('followListContent').querySelectorAll('.follow-list-row')].forEach((row,index)=>{
+      const id=ids[index];if(!id)return;
+      const card=cards.get(id)||{name:'User',avatar:''};
+      const old=row.querySelector('.follow-list-avatar');
+      if(old){
+        old.replaceChildren();
+        old.style.background='#000';
+        if(card.avatar){const img=document.createElement('img');img.src=card.avatar;img.alt='';old.appendChild(img);}
+      }
+      const name=row.querySelector('.follow-list-name');
+      if(name)name.textContent=card.name;
+    });
+  }catch(error){console.warn('Looply follower pictures:',error);}
+};
+
+/* Keep the empty profile and navigation avatar backgrounds black. */
+const looplyAvatarStyle=document.createElement('style');
+looplyAvatarStyle.textContent='#avatarImage,.navAvatar,.inbox-avatar,.follow-list-avatar{background:#000!important} .post .post-author img{width:34px;height:34px;object-fit:cover}';
+document.head.appendChild(looplyAvatarStyle);
+
+
 restoreSession();
 setInterval(async()=>{
   if(!user)return;
