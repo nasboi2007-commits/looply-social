@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +23,7 @@ section{padding:35px 7%;text-align:center}
 input,textarea{width:100%;padding:14px;margin:8px 0;border:1px solid #ddd3ef;border-radius:10px;font-size:16px}
 textarea{min-height:90px}
 button{cursor:pointer;padding:12px 20px;border:0;border-radius:12px;background:#793bdf;color:white;margin:5px}
+button:disabled{opacity:.6;cursor:wait}
 .tabs{display:flex;gap:10px;margin:20px 0}
 .tabs button{flex:1;background:#eee7ff;color:#6334d9}
 .tabs button.active{background:#793bdf;color:white}
@@ -57,6 +59,7 @@ footer{text-align:center;padding:25px;color:#766987}
 <button type="button" id="signupTab" class="active" onclick="showForm('signup')">Sign up</button>
 <button type="button" id="loginTab" onclick="showForm('login')">Log in</button>
 </div>
+
 <form id="authForm">
 <input id="name" type="text" placeholder="Your name">
 <input id="email" type="email" placeholder="Email address" required>
@@ -134,7 +137,11 @@ await loadPosts();
 async function editProfile(){
 const newName=prompt('Enter your name:');
 if(!newName||!newName.trim())return;
-const {error}=await supabaseClient.auth.updateUser({data:{full_name:newName.trim()}});
+
+const {error}=await supabaseClient.auth.updateUser({
+data:{full_name:newName.trim()}
+});
+
 if(error)alert(error.message);
 else{
 document.getElementById('profileName').textContent=newName.trim();
@@ -170,6 +177,7 @@ const {error:updateError}=await supabaseClient.from('profiles')
 .upsert({id:user.id,avatar_url:photoUrl});
 
 if(updateError){alert(updateError.message);return;}
+
 document.getElementById('avatarImage').src=photoUrl;
 document.getElementById('avatarFile').value='';
 alert('Profile photo uploaded successfully! 💜');
@@ -185,9 +193,12 @@ if(!file){message.textContent='Please select an image or video.';return;}
 if(!file.type.startsWith('image/')&&!file.type.startsWith('video/')){
 message.textContent='Choose a valid photo or video.';return;
 }
-if(file.size>50*1024*1024){message.textContent='File must be smaller than 50 MB.';return;}
+if(file.size>50*1024*1024){
+message.textContent='File must be smaller than 50 MB.';return;
+}
 
 message.textContent='Uploading...';
+
 const {data:{user},error:userError}=await supabaseClient.auth.getUser();
 if(userError||!user){message.textContent='Please log in first.';return;}
 
@@ -197,9 +208,13 @@ const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
 const path=user.id+'/'+Date.now()+'-'+safeName;
 
 const {error:uploadError}=await supabaseClient.storage.from(bucket).upload(path,file);
-if(uploadError){message.textContent='Upload failed: '+uploadError.message;return;}
+if(uploadError){
+message.textContent='Upload failed: '+uploadError.message;
+return;
+}
 
 const {data:urlData}=supabaseClient.storage.from(bucket).getPublicUrl(path);
+
 const {error:insertError}=await supabaseClient.from('posts').insert({
 user_id:user.id,
 caption:caption,
@@ -208,87 +223,45 @@ video:mediaType==='video'?urlData.publicUrl:null,
 media_type:mediaType
 });
 
-if(insertError){message.textContent='Post failed: '+insertError.message;return;}
+if(insertError){
+message.textContent='Post failed: '+insertError.message;
+return;
+}
 
 message.textContent='Your post was shared! 💜';
 document.getElementById('postCaption').value='';
 fileInput.value='';
 await loadPosts();
 }
+
 async function loadPosts(){
-  const feed=document.getElementById('postsFeed');
-  feed.textContent='Loading posts...';
-
-  const {data:posts,error}=await supabaseClient
-    .from('posts')
-    .select('*')
-    .order('created_at',{ascending:false});
-
-  if(error){
-    feed.textContent=error.message;
-    return;
-  }
-
-  const {data:{user}}=await supabaseClient.auth.getUser();
-
-  const {data:likes,error:likesError}=await supabaseClient
-    .from('likes')
-    .select('id,post_id,user_id');
-
-  if(likesError){
-    feed.textContent='Likes error: '+likesError.message;
-    return;
-  }
-
-  feed.replaceChildren();
-
-  (posts||[]).forEach(post=>{
-    const card=document.createElement('div');
-    card.className='post';
-
-    const caption=document.createElement('p');
-    caption.textContent=post.caption||'';
-    card.appendChild(caption);
-
-    const isVideo=post.media_type==='video'||(!post.image&&!!post.video);
-    const url=isVideo?post.video:post.image;
-
-    if(url){
-      const media=document.createElement(isVideo?'video':'img');
-      media.src=url;
-
-      if(isVideo){
-        media.controls=true;
-        media.playsInline=true;
-      }
-
-      card.appendChild(media);
-    }
-
-    const postLikes=(likes||[]).filter(like=>like.post_id===post.id);
-    const liked=postLikes.some(like=>like.user_id===user?.id);
-
-    const likeButton=document.createElement('button');
-    likeButton.textContent=(liked?'❤️':'🤍')+' Like ('+postLikes.length+')';
-
-    likeButton.style.background=liked?'#ed45a5':'#793bdf';
-
-    likeButton.onclick=()=>toggleLike(post.id,liked);
-
-    card.appendChild(likeButton);
-    feed.appendChild(card);
-  });
-}
 const feed=document.getElementById('postsFeed');
 feed.textContent='Loading posts...';
 
-const {data,error}=await supabaseClient.from('posts')
-.select('*').order('created_at',{ascending:false});
+const {data:posts,error}=await supabaseClient
+.from('posts')
+.select('*')
+.order('created_at',{ascending:false});
 
-if(error){feed.textContent=error.message;return;}
+if(error){
+feed.textContent=error.message;
+return;
+}
+
+const {data:{user}}=await supabaseClient.auth.getUser();
+
+const {data:likes,error:likesError}=await supabaseClient
+.from('likes')
+.select('id,post_id,user_id');
+
+if(likesError){
+feed.textContent='Likes error: '+likesError.message;
+return;
+}
+
 feed.replaceChildren();
 
-(data||[]).forEach(post=>{
+(posts||[]).forEach(post=>{
 const card=document.createElement('div');
 card.className='post';
 
@@ -302,44 +275,60 @@ const url=isVideo?post.video:post.image;
 if(url){
 const media=document.createElement(isVideo?'video':'img');
 media.src=url;
-if(isVideo){media.controls=true;media.playsInline=true;}
+
+if(isVideo){
+media.controls=true;
+media.playsInline=true;
+}
 card.appendChild(media);
 }
+
+const postLikes=(likes||[]).filter(like=>like.post_id===post.id);
+const liked=postLikes.some(like=>like.user_id===user?.id);
+
+const likeButton=document.createElement('button');
+likeButton.textContent=(liked?'❤️':'🤍')+' Like ('+postLikes.length+')';
+likeButton.style.background=liked?'#ed45a5':'#793bdf';
+likeButton.onclick=()=>toggleLike(post.id,liked);
+
+card.appendChild(likeButton);
 feed.appendChild(card);
 });
 }
+
 async function toggleLike(postId,liked){
-  const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+const {data:{user},error:userError}=await supabaseClient.auth.getUser();
 
-  if(userError||!user){
-    alert('Please log in first.');
-    return;
-  }
-
-  let result;
-
-  if(liked){
-    result=await supabaseClient
-      .from('likes')
-      .delete()
-      .eq('post_id',postId)
-      .eq('user_id',user.id);
-  }else{
-    result=await supabaseClient
-      .from('likes')
-      .insert({
-        post_id:postId,
-        user_id:user.id
-      });
-  }
-
-  if(result.error){
-    alert(result.error.message);
-    return;
-  }
-
-  await loadPosts();
+if(userError||!user){
+alert('Please log in first.');
+return;
 }
+
+let result;
+
+if(liked){
+result=await supabaseClient
+.from('likes')
+.delete()
+.eq('post_id',postId)
+.eq('user_id',user.id);
+}else{
+result=await supabaseClient
+.from('likes')
+.insert({
+post_id:postId,
+user_id:user.id
+});
+}
+
+if(result.error){
+alert(result.error.message);
+return;
+}
+
+await loadPosts();
+}
+
 document.getElementById('authForm').addEventListener('submit',async function(event){
 event.preventDefault();
 
@@ -355,17 +344,25 @@ message.textContent='Please wait...';
 try{
 if(currentMode==='signup'){
 const {error}=await supabaseClient.auth.signUp({
-email,password,
+email,
+password,
 options:{
 data:{full_name:name},
 emailRedirectTo:'https://nasboi2007-commits.github.io/looply-social/'
 }
 });
+
 if(error)throw error;
+
 message.textContent='Account created! Check your email to confirm your account.';
 }else{
-const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+const {error}=await supabaseClient.auth.signInWithPassword({
+email,
+password
+});
+
 if(error)throw error;
+
 message.textContent='You are logged in successfully!';
 await showProfile();
 }
@@ -380,8 +377,11 @@ showForm('signup');
 
 async function restoreLoginSession(){
 const {data,error}=await supabaseClient.auth.getSession();
-if(!error&&data.session)await showProfile();
+if(!error&&data.session){
+await showProfile();
 }
+}
+
 restoreLoginSession();
 </script>
 </body>
