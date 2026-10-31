@@ -207,6 +207,22 @@ footer{display:none}
 .follow-list-name{font-size:14px;font-weight:700;overflow-wrap:anywhere}
 .follow-list-empty{padding:25px 8px;text-align:center;color:#bdbdbd}
 
+
+/* LOOPLY PROFILE REDESIGN */
+#profile.looply-profile-page{display:none!important;max-width:680px!important;margin:0 auto!important;padding:0 0 92px!important;background:#050505!important;border:0!important;border-radius:0!important;text-align:left!important;color:#fff!important;min-height:calc(100dvh - 60px)}
+#profile.looply-profile-page.active-page{display:block!important}
+.profile-topbar{height:66px;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:radial-gradient(ellipse at 65% -40%,#5420a0 0,transparent 55%),#050505}
+.looply-brand{display:flex;align-items:center;gap:9px;font-size:25px;font-weight:900;letter-spacing:-1px}.looply-brand-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#9b2cff,#5b16cf);box-shadow:0 0 18px #8b35ff88;font-size:20px}
+.profile-top-actions{display:flex;gap:8px}.top-icon-button{background:transparent!important;color:white!important;font-size:25px!important;padding:7px!important;min-width:35px}
+.profile-hero{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:22px 18px 8px;min-height:175px}.profile-identity{min-width:0;flex:1}.profile-identity h2{font-size:29px;line-height:1.2;margin:0 0 7px;font-weight:850;overflow-wrap:anywhere}.profile-check{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#8b35f5;color:#fff;font-size:14px;vertical-align:middle}
+#profileEmail{color:#aaa!important;font-size:15px;margin:0 0 17px}.profile-tagline{font-size:13px;line-height:1.5;color:#eee;max-width:290px}.profile-avatar-wrap{flex:0 0 128px;width:128px!important;height:128px!important;margin:0 5px 0 0!important;border-radius:50%;padding:5px;background:linear-gradient(135deg,#b34bff,#6422ff,#f04ac4);box-shadow:0 0 22px #8b35ff66}#profile #avatarImage{width:118px!important;height:118px!important;border-radius:50%!important;border:3px solid #08060c!important;object-fit:cover;background:#17131d}#profile .avatar-plus{right:-2px!important;bottom:0!important;width:36px!important;height:36px!important;border:2px solid #050505!important;background:#8b35f5!important;font-size:22px!important}
+.profile-stats-row{display:flex;align-items:center;justify-content:flex-start;padding:12px 18px 18px;gap:0}.profile-stat{flex:1;text-align:left;background:transparent!important;border:0!important;border-radius:0!important;margin:0!important;padding:0 10px!important;display:flex;flex-direction:column;gap:3px;border-right:1px solid #4a4052!important}.profile-stat:first-child{padding-left:0!important}.profile-stat:last-child{border:0!important}.profile-stat strong{font-size:22px;color:#fff}.profile-stat span{font-size:13px;color:#aaa;font-weight:400}
+.profile-action-row{display:flex;gap:9px;padding:0 17px 15px}.profile-action-row button{height:48px;border:1px solid #38313f;border-radius:15px;background:#19171e!important;color:#fff!important;font-size:15px}.profile-edit-button{flex:1;font-size:16px!important}.profile-share-button,.profile-more-button{width:56px;font-size:22px!important}
+.profile-promo{display:flex;align-items:center;gap:12px;margin:0 17px 17px;padding:13px 15px;border:1px solid #7931c9;border-radius:17px;background:linear-gradient(110deg,#6421b5,#29123f 85%);min-height:76px}.promo-star{font-size:27px;color:#ffd35a}.profile-promo div{display:flex;flex:1;flex-direction:column;gap:4px}.profile-promo strong{font-size:15px}.profile-promo small{font-size:11px;color:#d2bfed}.promo-arrow{font-size:27px;color:#d9c7ef}
+.profile-highlights{display:flex;justify-content:space-around;gap:10px;padding:5px 12px 18px;overflow-x:auto}.highlight-item{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:76px;background:transparent!important;color:#fff!important;padding:0!important;font-size:12px;font-weight:500}.highlight-circle{display:grid;place-items:center;width:78px;height:78px;border-radius:50%;border:3px solid #8d36ef;padding:4px;background:#0b0910;font-size:32px}.highlight-new{border-color:#55505f;font-size:38px}.highlight-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}.highlight-vibe{color:#b54cff;text-shadow:0 0 14px #a52cff;font-size:38px}.highlight-life{color:#ff4ca7;font-size:38px}
+.profile-content-tabs{display:flex;justify-content:space-around;border-bottom:1px solid #29232f;margin-top:2px}.profile-content-tab{flex:1;background:transparent!important;color:#aaa!important;border-radius:0!important;margin:0!important;padding:13px!important;font-size:24px!important}.profile-content-tab.active{color:#fff!important;border-bottom:3px solid #a32dff;border-radius:0!important}#profile .profile-posts-wrap{margin:0;padding:2px 0 0;border:0}#profile .profile-post-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:2px}#profile .profile-post-tile{aspect-ratio:3/4}#profile .profile-empty{padding:35px 18px;color:#aaa}
+@media(max-width:390px){.profile-avatar-wrap{flex-basis:108px;width:108px!important;height:108px!important}.profile-hero{padding-left:14px;padding-right:14px}.profile-identity h2{font-size:25px}#profile #avatarImage{width:98px!important;height:98px!important}.highlight-circle{width:68px;height:68px}}
+
 </style>
 </head>
 <body>
@@ -238,24 +254,49 @@ footer{display:none}
 </section>
 
 <div id="appArea">
-  <section id="profile" class="app-page">
-    <h2>My Looply Profile 💜</h2>
-    <div class="avatar-wrap" style="margin:14px">
-      <img id="avatarImage" alt="Profile photo">
-      <button class="avatar-plus" type="button" onclick="el('avatarFile').click()" aria-label="Change profile photo">＋</button>
+  <section id="profile" class="app-page looply-profile-page">
+    <div class="profile-topbar">
+      <div class="looply-brand"><span class="looply-brand-icon">▶</span><span>Looply</span></div>
+      <div class="profile-top-actions">
+        <button type="button" class="top-icon-button" onclick="goTo('notificationsPanel',null)" aria-label="Notifications">♧</button>
+        <button type="button" class="top-icon-button" onclick="openSearch(null)" aria-label="Find people">♙＋</button>
+        <button type="button" class="top-icon-button" onclick="profileMoreMenu()" aria-label="More options">☰</button>
+      </div>
+    </div>
+    <div class="profile-hero">
+      <div class="profile-identity">
+        <h2 id="profileName">Looply User <span class="profile-check">✓</span></h2>
+        <p id="profileEmail">@looplyuser</p>
+        <p class="profile-tagline">Dream Big · Create More · Stay Real 💜</p>
+      </div>
+      <div class="avatar-wrap profile-avatar-wrap">
+        <img id="avatarImage" alt="Profile photo">
+        <button class="avatar-plus" type="button" onclick="el('avatarFile').click()" aria-label="Change profile photo">＋</button>
+      </div>
     </div>
     <input type="file" id="avatarFile" accept="image/*" hidden>
-    <h3 id="profileName" style="margin:12px 0 5px"></h3>
-    <p id="profileEmail" style="color:#cdbbdc"></p>
-    <div class="follow-stats">
-      <button type="button" class="follow-stat-button" onclick="openFollowList('followers')"><strong id="followerCount">0</strong><br>Followers</button>
-      <button type="button" class="follow-stat-button" onclick="openFollowList('following')"><strong id="followingCount">0</strong><br>Following</button>
+    <div class="profile-stats-row">
+      <button type="button" class="profile-stat" onclick="openFollowList('following')"><strong id="followingCount">0</strong><span>Following</span></button>
+      <button type="button" class="profile-stat" onclick="openFollowList('followers')"><strong id="followerCount">0</strong><span>Followers</span></button>
+      <div class="profile-stat"><strong id="profileLikeCount">0</strong><span>Likes</span></div>
     </div>
-    <button onclick="editName()">Edit name</button>
-    <div class="profile-posts-wrap">
-      <h3 class="profile-posts-title">My posts</h3>
-      <div id="profilePosts" class="profile-post-grid"><p class="profile-empty">Your photos and videos will appear here.</p></div>
+    <div class="profile-action-row">
+      <button type="button" class="profile-edit-button" onclick="editName()">✎　Edit Profile</button>
+      <button type="button" class="profile-share-button" onclick="shareLooplyProfile()" aria-label="Share profile">↗</button>
+      <button type="button" class="profile-more-button" onclick="profileMoreMenu()" aria-label="More profile options">•••</button>
     </div>
+    <div class="profile-promo"><span class="promo-star">✦</span><div><strong>Looply Creator</strong><small>Share your moments. Grow your community.</small></div><span class="promo-arrow">›</span></div>
+    <div class="profile-highlights">
+      <button type="button" class="highlight-item" onclick="openCreate(null)"><span class="highlight-circle highlight-new">＋</span><span>New</span></button>
+      <div class="highlight-item"><span class="highlight-circle highlight-avatar"><img id="highlightAvatar" alt=""></span><span>My moments</span></div>
+      <div class="highlight-item"><span class="highlight-circle highlight-vibe">✦</span><span>Vibes</span></div>
+      <div class="highlight-item"><span class="highlight-circle highlight-life">♡</span><span>Life</span></div>
+    </div>
+    <div class="profile-content-tabs">
+      <button type="button" class="profile-content-tab active" onclick="filterProfilePosts('all',this)" aria-label="All posts">▦</button>
+      <button type="button" class="profile-content-tab" onclick="filterProfilePosts('video',this)" aria-label="Videos">▣</button>
+    </div>
+    <div class="profile-posts-wrap"><div id="profilePosts" class="profile-post-grid"><p class="profile-empty">Your photos and videos will appear here.</p></div></div>
   </section>
 
   <section id="peopleSection" class="app-page">
@@ -412,10 +453,12 @@ async function startApp(){
   el('logoutButton').style.display='inline-block';
   el('bottomNav').style.display='flex';
   goTo('postsSection',document.querySelector('#bottomNav button'));
-  el('profileName').textContent=user.user_metadata?.full_name||'Looply User';
-  el('profileEmail').textContent=user.email||'';
+  const displayName=user.user_metadata?.full_name||'Looply User';
+  el('profileName').childNodes[0].textContent=displayName+' ';
+  const handle=(displayName.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,18)||'looplyuser');
+  el('profileEmail').textContent='@'+handle;
   const {data:profile}=await db.from('profiles').select('avatar_url').eq('id',user.id).maybeSingle();
-  if(profile?.avatar_url){el('avatarImage').src=profile.avatar_url;el('navAvatarImage').src=profile.avatar_url;}else{el('navAvatarImage').removeAttribute('src');}
+  if(profile?.avatar_url){el('avatarImage').src=profile.avatar_url;el('navAvatarImage').src=profile.avatar_url;el('highlightAvatar').src=profile.avatar_url;}else{el('navAvatarImage').removeAttribute('src');el('highlightAvatar').removeAttribute('src');}
   await Promise.all([loadPosts(),loadStats(),loadProfilePosts(),loadNotifications(),loadInbox()]);
 }
 
@@ -426,7 +469,8 @@ async function editName(){
   const {error}=await db.auth.updateUser({data:{full_name:name}});
   if(error){alert(error.message);return;}
   user=(await db.auth.getUser()).data.user;
-  el('profileName').textContent=name;
+  el('profileName').childNodes[0].textContent=name+' ';
+  el('profileEmail').textContent='@'+(name.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,18)||'looplyuser');
   const {error:directoryError}=await db.from('looply_directory').upsert({user_id:user.id,display_name:name});
   if(directoryError)alert(directoryError.message);
   else alert('Name updated!');
@@ -609,6 +653,27 @@ function closeAllCommentSheets(){document.querySelectorAll('.comment-area.open')
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllCommentSheets();});
 document.addEventListener('click',e=>{if(!document.querySelector('.comment-area.open'))return;if(e.target.closest('.comment-area.open')||e.target.closest('.comment-toggle'))return;closeAllCommentSheets();});
 
+
+function shareLooplyProfile(){
+  const shareData={title:'Looply profile',text:'Follow me on Looply!',url:location.href};
+  if(navigator.share)navigator.share(shareData).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(location.href).then(()=>alert('Profile link copied!')).catch(()=>alert('Could not copy link.'));
+  else alert('Sharing is not available on this browser.');
+}
+function profileMoreMenu(){
+  const choice=prompt('Profile options:\n1 = Edit name\n2 = Log out\n\nEnter 1 or 2.');
+  if(choice==='1')editName();
+  if(choice==='2')logout();
+}
+function filterProfilePosts(kind,button){
+  document.querySelectorAll('.profile-content-tab').forEach(x=>x.classList.remove('active'));
+  button.classList.add('active');
+  document.querySelectorAll('#profilePosts .profile-post-tile').forEach(tile=>{tile.style.display=(kind==='all'||tile.dataset.kind===kind)?'block':'none';});
+  const old=document.querySelector('#profilePosts .profile-filter-empty');if(old)old.remove();
+  const visible=[...document.querySelectorAll('#profilePosts .profile-post-tile')].some(tile=>tile.style.display!=='none');
+  if(!visible&&kind==='video'){const note=document.createElement('p');note.className='profile-empty profile-filter-empty';note.textContent='No videos yet.';el('profilePosts').appendChild(note);}
+}
+
 async function loadProfilePosts(){
   const box=el('profilePosts');if(!box||!user)return;
   box.innerHTML='<p class="profile-empty">Loading your posts...</p>';
@@ -617,7 +682,7 @@ async function loadProfilePosts(){
   if(error){box.textContent=error.message;return;}
   if(!data?.length){box.innerHTML='<p class="profile-empty">You have not posted anything yet.</p>';return;}
   data.forEach(post=>{
-    const tile=document.createElement('button');tile.className='profile-post-tile';tile.type='button';
+    const tile=document.createElement('button');tile.className='profile-post-tile';tile.type='button';tile.dataset.kind=(post.media_type==='video'||(!post.image&&post.video))?'video':'image';
     const isVideo=post.media_type==='video'||(!post.image&&post.video);
     const src=isVideo?post.video:post.image;
     if(src){const media=document.createElement(isVideo?'video':'img');media.src=src;if(isVideo){media.muted=true;media.playsInline=true;media.preload='metadata';}else{media.loading='lazy';media.alt=post.caption||'My Looply post';}tile.appendChild(media);}
@@ -634,6 +699,10 @@ async function loadStats(){
   ]);
   el('followerCount').textContent=a.count||0;
   el('followingCount').textContent=b.count||0;
+  const {data:myPosts}=await db.from('posts').select('id').eq('user_id',user.id);
+  let totalLikes=0;
+  if(myPosts?.length){const ids=myPosts.map(post=>post.id);const {count}=await db.from('likes').select('id',{count:'exact',head:true}).in('post_id',ids);totalLikes=count||0;}
+  el('profileLikeCount').textContent=totalLikes;
 }
 
 async function openFollowList(kind){
