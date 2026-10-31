@@ -141,15 +141,35 @@ footer{display:none}
  #bottomNav{left:calc(50% - 260px);right:calc(50% - 260px)}
 }
 @media(max-width:430px){.post{min-height:440px}.post-author{bottom:88px}.post-caption{bottom:43px}}
-
+/* Dedicated app pages and TikTok-like sheets */
+.app-page{display:none!important;min-height:calc(100dvh - 112px);padding-top:14px!important;padding-bottom:90px!important}
+.app-page.active-page{display:block!important}
+#postsSection.active-page{padding-top:0!important;padding-bottom:0!important}
+#peopleSection.active-page,#messagesPanel.active-page,#notificationsPanel.active-page,#profile.active-page,#createSection.active-page{max-width:680px;margin:0 auto;padding:22px 14px 100px!important}
+#peopleSection .panel{padding:20px}
+#peopleSection h2{font-size:24px;text-align:left;margin-bottom:8px}
+#followSearch{height:52px;border-radius:28px;padding-left:18px;background:#211a29}
+#peopleResults{margin-top:14px}
+.page-title{font-size:23px;text-align:left;margin:8px 0 18px;padding:0 4px}
+#messagesPanel .panel,#notificationsPanel .panel{padding:18px}
+#messagesPanel #chatWindow{margin-top:18px}
+#bottomNav button{cursor:pointer}
+.post .comment-area.open{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:250;max-height:78dvh;border-radius:22px 22px 0 0;padding:20px 14px calc(18px + env(safe-area-inset-bottom));background:#17131d;box-shadow:0 -18px 60px rgba(0,0,0,.8);overflow-y:auto}
+.post .comment-area.open:before{content:"";display:block;width:42px;height:4px;border-radius:9px;background:#766a80;margin:0 auto 16px}
+.post .sound-toggle{top:72px;bottom:auto;right:12px;width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.45);font-size:20px}
+#galleryHint{font-size:13px;color:#cdbbdc;margin:8px 0 12px}
+#mediaFile{display:none}
+.gallery-pick{display:block;width:100%;padding:17px;border:1px dashed #9b70c9;border-radius:15px;background:#21182c;color:#fff;text-align:center;font-weight:bold;margin:10px 0}
+#selectedMediaName{font-size:13px;color:#d9b6ff;margin:8px 0}
+@media(min-width:700px){.app-page.active-page{min-height:calc(100dvh - 112px)}}
 </style>
 </head>
 <body>
 <header>
   <div class="logo">Looply ✨</div>
   <div>
-    <button onclick="togglePanel('notificationsPanel')">🔔 <span id="unreadCount">0</span></button>
-    <button onclick="togglePanel('messagesPanel')">💬</button>
+    <button onclick="goTo('notificationsPanel')">🔔 <span id="unreadCount">0</span></button>
+    <button onclick="goTo('messagesPanel')">💬</button>
     <button onclick="logout()" id="logoutButton" style="display:none;background:#ed45a5">Log out</button>
   </div>
 </header>
@@ -173,7 +193,7 @@ footer{display:none}
 </section>
 
 <div id="appArea">
-  <section id="profile">
+  <section id="profile" class="app-page">
     <h2>My Looply Profile 💜</h2>
     <div style="margin:14px"><img id="avatarImage" alt="Profile photo"></div>
     <input type="file" id="avatarFile" accept="image/*">
@@ -187,15 +207,16 @@ footer{display:none}
     <button onclick="editName()">Edit name</button>
   </section>
 
-  <section id="peopleSection">
+  <section id="peopleSection" class="app-page">
     <div class="panel">
-      <h2>Discover people 💜</h2>
-      <input id="followSearch" placeholder="Search members by name" oninput="searchPeople()">
+      <h2>Search</h2>
+      <p style="text-align:left;color:#bdb0c8;margin:0 0 12px">Find people on Looply</p>
+      <input id="followSearch" placeholder="Search people by name..." oninput="searchPeople()" autocomplete="off">
       <div id="peopleResults"></div>
     </div>
   </section>
 
-  <section id="postsSection">
+  <section id="postsSection" class="app-page">
     <h2>Your Looply feed</h2>
     <div class="feed-tabs">
       <button id="allTab" class="active" onclick="changeFeed('all')">For You</button>
@@ -204,27 +225,29 @@ footer{display:none}
     <div id="postsFeed">Loading posts...</div>
   </section>
 
-  <section id="createSection">
+  <section id="createSection" class="app-page">
     <div class="panel" id="createPanel">
       <h2>Create a post ✨</h2>
       <textarea id="caption" placeholder="What's happening?"></textarea>
       <input type="file" id="mediaFile" accept="image/*,video/*">
+      <label class="gallery-pick" for="mediaFile">＋ Choose photo or video from gallery</label>
+      <p id="selectedMediaName">No media selected</p>
       <button class="submit" onclick="createPost()">Share post</button>
       <p id="postStatus"></p>
     </div>
   </section>
 
-  <section id="notificationsPanel">
+  <section id="notificationsPanel" class="app-page">
     <div class="panel">
-      <h2>🔔 Notifications</h2>
+      <h2 class="page-title">🔔 Notifications</h2>
       <div id="notificationList">Loading...</div>
       <button onclick="markNotificationsRead()">Mark all as read</button>
     </div>
   </section>
 
-  <section id="messagesPanel">
+  <section id="messagesPanel" class="app-page">
     <div class="panel">
-      <h2>💬 Looply Messages</h2>
+      <h2 class="page-title">💬 Inbox</h2>
       <input id="messageSearch" placeholder="Find a member by name" oninput="searchMessagePeople()">
       <div id="messagePeople"></div>
       <h3 style="margin:14px 0 8px">Your conversations</h3>
@@ -245,8 +268,8 @@ footer{display:none}
 
 <nav id="bottomNav">
   <button class="active" onclick="goTo('postsSection',this)"><span class="navIcon">⌂</span>Home</button>
-  <button onclick="goTo('peopleSection',this)"><span class="navIcon">⌕</span>Discover</button>
-  <button onclick="goTo('createSection',this)"><span class="navIcon">＋</span>Create</button>
+  <button onclick="openSearch(this)"><span class="navIcon">⌕</span>Search</button>
+  <button onclick="openCreate(this)"><span class="navIcon">＋</span>Create</button>
   <button onclick="goTo('messagesPanel',this)"><span class="navIcon">✉</span>Inbox</button>
   <button onclick="goTo('profile',this)"><span class="navIcon">◎</span>Profile</button>
 </nav>
@@ -268,12 +291,23 @@ function message(id,text){el(id).textContent=text}
 function goTo(id,button){
   const target=el(id);
   if(!target)return;
-  target.scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.app-page').forEach(page=>page.classList.remove('active-page'));
+  target.classList.add('active-page');
   document.querySelectorAll('#bottomNav button').forEach(b=>b.classList.remove('active'));
   if(button)button.classList.add('active');
+  else {
+    const nav=[...document.querySelectorAll('#bottomNav button')];
+    const index={postsSection:0,peopleSection:1,createSection:2,messagesPanel:3,profile:4}[id];
+    if(index!==undefined&&nav[index])nav[index].classList.add('active');
+  }
   if(id==='messagesPanel')loadInbox();
   if(id==='notificationsPanel')loadNotifications();
+  if(id==='profile')loadStats();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
+function openSearch(button){goTo('peopleSection',button);setTimeout(()=>el('followSearch').focus(),180);}
+function openCreate(button){goTo('createSection',button);el('mediaFile').click();}
+
 
 function setMode(value){
   mode=value;
@@ -315,12 +349,9 @@ async function startApp(){
   if(!user)return;
   el('welcome').style.display='none';
   el('appArea').style.display='block';
-  el('profile').style.display='block';
-  el('postsSection').style.display='block';
-  el('peopleSection').style.display='block';
-  el('createSection').style.display='block';
   el('logoutButton').style.display='inline-block';
   el('bottomNav').style.display='flex';
+  goTo('postsSection',document.querySelector('#bottomNav button'));
   el('profileName').textContent=user.user_metadata?.full_name||'Looply User';
   el('profileEmail').textContent=user.email||'';
   const {data:profile}=await db.from('profiles').select('avatar_url').eq('id',user.id).maybeSingle();
@@ -387,6 +418,11 @@ async function createPost(){
   goTo('postsSection',document.querySelector('#bottomNav button'));
 }
 
+el('mediaFile').addEventListener('change',()=>{
+  const file=el('mediaFile').files[0];
+  el('selectedMediaName').textContent=file?file.name:'No media selected';
+});
+
 function changeFeed(value){
   feedMode=value;
   el('allTab').classList.toggle('active',value==='all');
@@ -423,9 +459,14 @@ async function loadPosts(){
     const url=video?post.video:post.image;
     if(url){
       const media=document.createElement(video?'video':'img');media.src=url;
-      if(video){media.playsInline=true;media.loop=true;media.muted=true;media.autoplay=true;media.preload='metadata';media.setAttribute('playsinline','');}
+      if(video){media.playsInline=true;media.loop=true;media.muted=false;media.autoplay=true;media.preload='metadata';media.setAttribute('playsinline','');}
       else{media.alt='Looply post image';media.loading='lazy';}
       card.appendChild(media);
+      if(video){
+        const sound=document.createElement('button');sound.className='sound-toggle';sound.type='button';sound.textContent='🔊';sound.setAttribute('aria-label','Toggle video sound');
+        sound.onclick=()=>{media.muted=!media.muted;sound.textContent=media.muted?'🔇':'🔊';if(!media.muted)media.play().catch(()=>{media.muted=true;sound.textContent='🔇';});};
+        card.appendChild(sound);
+      }
     }
     const author=document.createElement('p');author.className='post-author';
     author.textContent=(post.user_id===user.id?'You':'Looply creator')+'  ·  Looply';card.appendChild(author);
@@ -467,7 +508,17 @@ async function loadPosts(){
   }
   // Play only the video currently visible in the feed.
   if(window.looplyVideoObserver)window.looplyVideoObserver.disconnect();
-  window.looplyVideoObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{const v=entry.target;if(entry.isIntersecting&&entry.intersectionRatio>.65){v.play().catch(()=>{});}else v.pause();}),{root:box,threshold:[0,.65,1]});
+  window.looplyVideoObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{
+    const v=entry.target;
+    if(entry.isIntersecting&&entry.intersectionRatio>.65){
+      v.muted=false;
+      v.play().then(()=>{const b=v.parentElement.querySelector('.sound-toggle');if(b)b.textContent='🔊';}).catch(()=>{
+        v.muted=true;
+        const b=v.parentElement.querySelector('.sound-toggle');if(b)b.textContent='🔇';
+        v.play().catch(()=>{});
+      });
+    }else v.pause();
+  }),{root:box,threshold:[0,.65,1]});
   box.querySelectorAll('video').forEach(v=>window.looplyVideoObserver.observe(v));
 }
 async function loadStats(){
