@@ -354,6 +354,66 @@ async function uploadAvatar() {
   alert('Profile photo uploaded successfully! 💜');
 }
 async function createPost() {
+  const caption = document.getElementById('caption').value;
+  const fileInput = document.getElementById('postFile');
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert('Please select an image or video.');
+    return;
+  }
+
+  if (file.size > 50 * 1024 * 1024) {
+    alert('File must be smaller than 50 MB.');
+    return;
+  }
+
+  const user = (await supabaseClient.auth.getUser()).data.user;
+
+  if (!user) {
+    alert('Please log in first.');
+    return;
+  }
+
+  const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+  const bucket = mediaType === 'video' ? 'videos' : 'posts';
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const filePath = user.id + '/' + Date.now() + '-' + safeName;
+
+  const { error: uploadError } = await supabaseClient.storage
+    .from(bucket)
+    .upload(filePath, file);
+
+  if (uploadError) {
+    alert('Upload failed: ' + uploadError.message);
+    return;
+  }
+
+  const { data: urlData } = supabaseClient.storage
+    .from(bucket)
+    .getPublicUrl(filePath);
+
+  const { error: insertError } = await supabaseClient
+    .from('posts')
+    .insert({
+      user_id: user.id,
+      caption: caption,
+      image: mediaType === 'image' ? urlData.publicUrl : null,
+      video: mediaType === 'video' ? urlData.publicUrl : null,
+      media_type: mediaType
+    });
+
+  if (insertError) {
+    alert('Post failed: ' + insertError.message);
+    return;
+  }
+
+  alert('Post shared successfully!');
+  document.getElementById('caption').value = '';
+  fileInput.value = '';
+  loadPosts();
+}
   const file = document.getElementById('postFile').files[0];
   const caption = document.getElementById('postCaption').value.trim();
   const message = document.getElementById('postMessage');
