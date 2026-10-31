@@ -162,6 +162,50 @@ footer{display:none}
 .gallery-pick{display:block;width:100%;padding:17px;border:1px dashed #9b70c9;border-radius:15px;background:#21182c;color:#fff;text-align:center;font-weight:bold;margin:10px 0}
 #selectedMediaName{font-size:13px;color:#d9b6ff;margin:8px 0}
 @media(min-width:700px){.app-page.active-page{min-height:calc(100dvh - 112px)}}
+
+/* Profile gallery, compact create action, comment dismissal and inbox people */
+.avatar-wrap{position:relative;display:inline-block;width:100px;height:100px}
+#avatarImage{display:block;width:100px;height:100px}
+.avatar-plus{position:absolute!important;right:-3px!important;bottom:0!important;width:31px!important;height:31px!important;min-height:31px!important;border:2px solid #090711!important;border-radius:50%!important;background:linear-gradient(120deg,#8b5cf6,#ff3ca6)!important;padding:0!important;font-size:22px!important;line-height:27px!important}
+.profile-posts-wrap{margin:24px -12px 0;border-top:1px solid #292929;padding-top:16px}
+.profile-posts-title{text-align:left;padding:0 12px 12px;font-size:16px}
+.profile-post-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px}
+.profile-post-tile{position:relative;aspect-ratio:3/4;background:#17131d;overflow:hidden;border:0;border-radius:0;padding:0;margin:0}
+.profile-post-tile img,.profile-post-tile video{width:100%;height:100%;object-fit:cover;display:block}
+.profile-post-tile .tile-play{position:absolute;right:7px;top:7px;text-shadow:0 1px 5px #000}
+.profile-empty{grid-column:1/-1;padding:24px;color:#bdbdbd;text-align:center}
+.create-preview{min-height:90px;border:1px dashed #554365;border-radius:14px;display:grid;place-items:center;padding:16px;color:#bdb0c8;margin:10px 0;font-size:14px}
+.create-preview img,.create-preview video{max-width:100%;max-height:45vh;border-radius:12px}
+#bottomNav .create-nav{width:48px;min-width:48px;height:34px;margin:0 3px;border-radius:9px;background:linear-gradient(100deg,#8b5cf6,#ff3ca6);color:#fff;padding:0;align-self:center}
+#bottomNav .create-nav .navIcon{font-size:29px;line-height:32px;color:#fff}
+.navAvatar{width:25px;height:25px;border-radius:50%;border:1px solid #aaa;overflow:hidden;display:grid;place-items:center;background:#30213f;font-size:17px}
+.navAvatar img{width:100%;height:100%;object-fit:cover}
+.inbox-person{display:flex;align-items:center;gap:12px;width:100%;padding:12px 6px;margin:0;border:0;border-bottom:1px solid #302a35;border-radius:0;background:transparent;color:#fff;text-align:left}
+.inbox-avatar{width:48px;height:48px;flex:0 0 48px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#ff3ca6);display:grid;place-items:center;font-weight:bold;overflow:hidden}
+.inbox-avatar img{width:100%;height:100%;object-fit:cover}
+.inbox-copy{min-width:0;display:flex;flex-direction:column;gap:5px;flex:1}
+.inbox-copy strong{font-size:14px}
+.inbox-copy span{font-size:12px;color:#bdbdbd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.comment-dismiss{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:240;display:none}
+.comment-dismiss.show{display:block}
+.post .comment-area.open{z-index:250}
+
+
+.follow-stat-button{background:#30213f!important;color:#fff!important;padding:12px 18px!important;border-radius:12px!important;min-width:105px!important;line-height:1.5!important}
+.follow-stat-button strong{font-size:18px}
+.follow-list-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.68);align-items:flex-end;justify-content:center}
+.follow-list-modal.open{display:flex}
+.follow-list-sheet{width:100%;max-width:520px;max-height:78dvh;overflow:hidden;background:#17131d;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -12px 45px #0009}
+.follow-list-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #302a35;padding-bottom:12px;margin-bottom:8px}
+.follow-list-head h2{font-size:19px}
+.follow-list-close{background:#30213f!important;border-radius:50%!important;width:36px;height:36px;padding:0!important;font-size:25px!important;line-height:30px}
+.follow-list-content{overflow-y:auto;max-height:calc(78dvh - 90px)}
+.follow-list-row{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid #302a35}
+.follow-list-avatar{width:46px;height:46px;flex:0 0 46px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:linear-gradient(135deg,#8b5cf6,#ff3ca6);font-weight:bold}
+.follow-list-avatar img{width:100%;height:100%;object-fit:cover}
+.follow-list-name{font-size:14px;font-weight:700;overflow-wrap:anywhere}
+.follow-list-empty{padding:25px 8px;text-align:center;color:#bdbdbd}
+
 </style>
 </head>
 <body>
@@ -195,16 +239,22 @@ footer{display:none}
 <div id="appArea">
   <section id="profile" class="app-page">
     <h2>My Looply Profile 💜</h2>
-    <div style="margin:14px"><img id="avatarImage" alt="Profile photo"></div>
-    <input type="file" id="avatarFile" accept="image/*">
-    <button onclick="uploadAvatar()">Upload profile photo</button>
+    <div class="avatar-wrap" style="margin:14px">
+      <img id="avatarImage" alt="Profile photo">
+      <button class="avatar-plus" type="button" onclick="el('avatarFile').click()" aria-label="Change profile photo">＋</button>
+    </div>
+    <input type="file" id="avatarFile" accept="image/*" hidden>
     <h3 id="profileName" style="margin:12px 0 5px"></h3>
     <p id="profileEmail" style="color:#cdbbdc"></p>
     <div class="follow-stats">
-      <p><strong id="followerCount">0</strong><br>Followers</p>
-      <p><strong id="followingCount">0</strong><br>Following</p>
+      <button type="button" class="follow-stat-button" onclick="openFollowList('followers')"><strong id="followerCount">0</strong><br>Followers</button>
+      <button type="button" class="follow-stat-button" onclick="openFollowList('following')"><strong id="followingCount">0</strong><br>Following</button>
     </div>
     <button onclick="editName()">Edit name</button>
+    <div class="profile-posts-wrap">
+      <h3 class="profile-posts-title">My posts</h3>
+      <div id="profilePosts" class="profile-post-grid"><p class="profile-empty">Your photos and videos will appear here.</p></div>
+    </div>
   </section>
 
   <section id="peopleSection" class="app-page">
@@ -227,12 +277,11 @@ footer{display:none}
 
   <section id="createSection" class="app-page">
     <div class="panel" id="createPanel">
-      <h2>Create a post ✨</h2>
-      <textarea id="caption" placeholder="What's happening?"></textarea>
-      <input type="file" id="mediaFile" accept="image/*,video/*">
-      <label class="gallery-pick" for="mediaFile">＋ Choose photo or video from gallery</label>
-      <p id="selectedMediaName">No media selected</p>
-      <button class="submit" onclick="createPost()">Share post</button>
+      <h2>Create a post</h2>
+      <input type="file" id="mediaFile" accept="image/*,video/*" hidden>
+      <div id="createPreview" class="create-preview">Choose a photo or video using the + button below.</div>
+      <textarea id="caption" placeholder="Write a caption..."></textarea>
+      <button class="submit" onclick="createPost()">Post to Looply</button>
       <p id="postStatus"></p>
     </div>
   </section>
@@ -247,10 +296,10 @@ footer{display:none}
 
   <section id="messagesPanel" class="app-page">
     <div class="panel">
-      <h2 class="page-title">💬 Inbox</h2>
-      <input id="messageSearch" placeholder="Find a member by name" oninput="searchMessagePeople()">
+      <h2 class="page-title">Inbox</h2>
+      <input id="messageSearch" placeholder="Search people" oninput="searchMessagePeople()">
       <div id="messagePeople"></div>
-      <h3 style="margin:14px 0 8px">Your conversations</h3>
+      <h3 style="margin:18px 0 10px;text-align:left">Messages</h3>
       <div id="inbox"></div>
       <div id="chatWindow" style="display:none">
         <h3 id="chatName"></h3>
@@ -266,12 +315,22 @@ footer{display:none}
   </section>
 </div>
 
+<div id="followListModal" class="follow-list-modal" aria-hidden="true" onclick="if(event.target===this)closeFollowList()">
+  <section class="follow-list-sheet" role="dialog" aria-modal="true" aria-labelledby="followListTitle">
+    <div class="follow-list-head">
+      <h2 id="followListTitle">Followers</h2>
+      <button type="button" class="follow-list-close" onclick="closeFollowList()" aria-label="Close">×</button>
+    </div>
+    <div id="followListContent" class="follow-list-content">Loading...</div>
+  </section>
+</div>
+
 <nav id="bottomNav">
   <button class="active" onclick="goTo('postsSection',this)"><span class="navIcon">⌂</span>Home</button>
   <button onclick="openSearch(this)"><span class="navIcon">⌕</span>Search</button>
-  <button onclick="openCreate(this)"><span class="navIcon">＋</span>Create</button>
+  <button class="create-nav" onclick="openCreate(this)" aria-label="Create"><span class="navIcon">＋</span></button>
   <button onclick="goTo('messagesPanel',this)"><span class="navIcon">✉</span>Inbox</button>
-  <button onclick="goTo('profile',this)"><span class="navIcon">◎</span>Profile</button>
+  <button onclick="goTo('profile',this)"><span class="navAvatar"><img id="navAvatarImage" alt=""></span>Profile</button>
 </nav>
 <footer>© 2026 Looply. Connect. Share. Belong. 💜</footer>
 
@@ -302,7 +361,7 @@ function goTo(id,button){
   }
   if(id==='messagesPanel')loadInbox();
   if(id==='notificationsPanel')loadNotifications();
-  if(id==='profile')loadStats();
+  if(id==='profile'){loadStats();loadProfilePosts();}
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function openSearch(button){goTo('peopleSection',button);setTimeout(()=>el('followSearch').focus(),180);}
@@ -355,8 +414,8 @@ async function startApp(){
   el('profileName').textContent=user.user_metadata?.full_name||'Looply User';
   el('profileEmail').textContent=user.email||'';
   const {data:profile}=await db.from('profiles').select('avatar_url').eq('id',user.id).maybeSingle();
-  if(profile?.avatar_url)el('avatarImage').src=profile.avatar_url;
-  await Promise.all([loadPosts(),loadStats(),loadNotifications(),loadInbox()]);
+  if(profile?.avatar_url){el('avatarImage').src=profile.avatar_url;el('navAvatarImage').src=profile.avatar_url;}else{el('navAvatarImage').removeAttribute('src');}
+  await Promise.all([loadPosts(),loadStats(),loadProfilePosts(),loadNotifications(),loadInbox()]);
 }
 
 async function editName(){
@@ -388,7 +447,7 @@ async function uploadAvatar(){
   const url=db.storage.from('avatars').getPublicUrl(path).data.publicUrl;
   const {error:saveError}=await db.from('profiles').upsert({id:user.id,avatar_url:url});
   if(saveError){alert(saveError.message);return;}
-  el('avatarImage').src=url;
+  el('avatarImage').src=url;el('navAvatarImage').src=url;
   alert('Profile photo updated!');
 }
 
@@ -415,13 +474,23 @@ async function createPost(){
   el('mediaFile').value='';
   message('postStatus','Post shared successfully! 💜');
   await loadPosts();
+  await loadProfilePosts();
   goTo('postsSection',document.querySelector('#bottomNav button'));
 }
 
 el('mediaFile').addEventListener('change',()=>{
   const file=el('mediaFile').files[0];
-  el('selectedMediaName').textContent=file?file.name:'No media selected';
+  const preview=el('createPreview');
+  preview.replaceChildren();
+  if(!file){preview.textContent='Choose a photo or video using the + button below.';return;}
+  const node=document.createElement(file.type.startsWith('video/')?'video':'img');
+  node.src=URL.createObjectURL(file);
+  if(node.tagName==='VIDEO'){node.controls=true;node.playsInline=true;}
+  else node.alt='Selected post preview';
+  preview.appendChild(node);
 });
+
+el('avatarFile').addEventListener('change',uploadAvatar);
 
 function changeFeed(value){
   feedMode=value;
@@ -454,7 +523,7 @@ async function loadPosts(){
     box.appendChild(empty);return;
   }
   for(const post of posts){
-    const card=document.createElement('article');card.className='post';
+    const card=document.createElement('article');card.className='post';card.dataset.postId=post.id;
     const video=post.media_type==='video'||(!post.image&&post.video);
     const url=video?post.video:post.image;
     if(url){
@@ -498,10 +567,10 @@ async function loadPosts(){
     const form=document.createElement('form');form.className='comment-form';
     const input=document.createElement('textarea');input.placeholder='Add a comment...';input.required=true;
     const send=document.createElement('button');send.textContent='Send';form.append(input,send);
-    form.onsubmit=async e=>{e.preventDefault();const content=input.value.trim();if(!content)return;send.disabled=true;const {data,error}=await db.from('comments').insert({post_id:post.id,user_id:user.id,content}).select().single();if(error)alert(error.message);else{comments.push(data);input.value='';drawComments();}send.disabled=false;};
+    form.onsubmit=async e=>{e.preventDefault();const content=input.value.trim();if(!content)return;send.disabled=true;const {data,error}=await db.from('comments').insert({post_id:post.id,user_id:user.id,content}).select().single();if(error)alert(error.message);else{comments.push(data);input.value='';drawComments();closeCommentSheet(area);}send.disabled=false;};
     area.appendChild(form);card.appendChild(area);
     const commentToggle=document.createElement('button');commentToggle.className='comment-toggle';commentToggle.innerHTML='<span style="font-size:25px">▢</span><span>'+comments.filter(x=>x.post_id===post.id).length+'</span>';
-    commentToggle.onclick=()=>area.classList.toggle('open');card.appendChild(commentToggle);
+    commentToggle.onclick=()=>openCommentSheet(area);card.appendChild(commentToggle);
     const share=document.createElement('button');share.className='share-button';share.innerHTML='<span style="font-size:25px">↗</span><span>Share</span>';
     share.onclick=async()=>{const shareData={title:'Looply',text:post.caption||'Watch this on Looply',url:location.href};try{if(navigator.share)await navigator.share(shareData);else if(navigator.clipboard){await navigator.clipboard.writeText(location.href);alert('Looply link copied!');}else alert('Share is not available on this browser.');}catch(e){if(e.name!=='AbortError')alert('Could not share this post.');}};
     card.appendChild(share);box.appendChild(card);
@@ -521,6 +590,42 @@ async function loadPosts(){
   }),{root:box,threshold:[0,.65,1]});
   box.querySelectorAll('video').forEach(v=>window.looplyVideoObserver.observe(v));
 }
+function openCommentSheet(area){
+  document.querySelectorAll('.comment-area.open').forEach(x=>x.classList.remove('open'));
+  area.classList.add('open');
+  document.body.classList.add('commenting');
+  let shade=el('commentDismiss');
+  if(!shade){shade=document.createElement('div');shade.id='commentDismiss';shade.className='comment-dismiss';shade.addEventListener('click',()=>closeAllCommentSheets());document.body.appendChild(shade);}
+  shade.classList.add('show');
+}
+function closeCommentSheet(area){
+  if(area)area.classList.remove('open');
+  const any=document.querySelector('.comment-area.open');
+  const shade=el('commentDismiss');
+  if(!any){if(shade)shade.classList.remove('show');document.body.classList.remove('commenting');}
+}
+function closeAllCommentSheets(){document.querySelectorAll('.comment-area.open').forEach(x=>x.classList.remove('open'));closeCommentSheet(null);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllCommentSheets();});
+document.addEventListener('click',e=>{if(!document.querySelector('.comment-area.open'))return;if(e.target.closest('.comment-area.open')||e.target.closest('.comment-toggle'))return;closeAllCommentSheets();});
+
+async function loadProfilePosts(){
+  const box=el('profilePosts');if(!box||!user)return;
+  box.innerHTML='<p class="profile-empty">Loading your posts...</p>';
+  const {data,error}=await db.from('posts').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+  box.replaceChildren();
+  if(error){box.textContent=error.message;return;}
+  if(!data?.length){box.innerHTML='<p class="profile-empty">You have not posted anything yet.</p>';return;}
+  data.forEach(post=>{
+    const tile=document.createElement('button');tile.className='profile-post-tile';tile.type='button';
+    const isVideo=post.media_type==='video'||(!post.image&&post.video);
+    const src=isVideo?post.video:post.image;
+    if(src){const media=document.createElement(isVideo?'video':'img');media.src=src;if(isVideo){media.muted=true;media.playsInline=true;media.preload='metadata';}else{media.loading='lazy';media.alt=post.caption||'My Looply post';}tile.appendChild(media);}
+    if(isVideo){const play=document.createElement('span');play.className='tile-play';play.textContent='▶';tile.appendChild(play);}
+    tile.addEventListener('click',()=>{goTo('postsSection',document.querySelector('#bottomNav button'));setTimeout(()=>{const target=document.querySelector('[data-post-id="'+CSS.escape(post.id)+'"]');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},150);});
+    box.appendChild(tile);
+  });
+}
+
 async function loadStats(){
   const [a,b]=await Promise.all([
     db.from('follows').select('id',{count:'exact',head:true}).eq('following_id',user.id),
@@ -529,6 +634,52 @@ async function loadStats(){
   el('followerCount').textContent=a.count||0;
   el('followingCount').textContent=b.count||0;
 }
+
+async function openFollowList(kind){
+  if(!user)return;
+  const modal=el('followListModal');
+  const title=el('followListTitle');
+  const content=el('followListContent');
+  const isFollowers=kind==='followers';
+  title.textContent=isFollowers?'Followers':'Following';
+  content.textContent='Loading...';
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  const column=isFollowers?'follower_id':'following_id';
+  const matchColumn=isFollowers?'following_id':'follower_id';
+  const {data:links,error}=await db.from('follows').select(column).eq(matchColumn,user.id).order('created_at',{ascending:false});
+  if(error){content.textContent=error.message;return;}
+  const ids=[...new Set((links||[]).map(row=>row[column]).filter(Boolean))];
+  if(!ids.length){content.innerHTML='<p class="follow-list-empty">'+(isFollowers?'No followers yet.':'You are not following anyone yet.')+'</p>';return;}
+  const [peopleResult,avatarResult]=await Promise.all([
+    db.from('looply_directory').select('user_id,display_name').in('user_id',ids),
+    db.from('profiles').select('id,avatar_url').in('id',ids)
+  ]);
+  if(peopleResult.error){content.textContent=peopleResult.error.message;return;}
+  if(avatarResult.error){content.textContent=avatarResult.error.message;return;}
+  const people=peopleResult.data||[];
+  const avatars=avatarResult.data||[];
+  content.replaceChildren();
+  ids.forEach(id=>{
+    const person=people.find(p=>p.user_id===id)||{user_id:id,display_name:'Looply member'};
+    const profile=avatars.find(p=>p.id===id);
+    const row=document.createElement('div');row.className='follow-list-row';
+    const avatar=document.createElement('div');avatar.className='follow-list-avatar';
+    if(profile?.avatar_url){const img=document.createElement('img');img.src=profile.avatar_url;img.alt='';avatar.appendChild(img);}
+    else avatar.textContent=(person.display_name||'L').trim().slice(0,1).toUpperCase();
+    const name=document.createElement('span');name.className='follow-list-name';name.textContent=person.display_name||'Looply member';
+    row.append(avatar,name);content.appendChild(row);
+  });
+}
+function closeFollowList(){
+  const modal=el('followListModal');
+  if(!modal)return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeFollowList();});
 
 async function searchPeople(){
   const term=el('followSearch').value.trim();
@@ -607,10 +758,9 @@ async function searchMessagePeople(){
   if(error){box.textContent=error.message;return;}
   box.replaceChildren();
   (data||[]).forEach(person=>{
-    const button=document.createElement('button');
-    button.textContent='Message '+person.display_name;
-    button.onclick=()=>openChat(person);
-    box.appendChild(button);
+    const button=document.createElement('button');button.className='inbox-person';button.type='button';
+    const avatar=document.createElement('span');avatar.className='inbox-avatar';avatar.textContent=(person.display_name||'L').slice(0,1).toUpperCase();
+    const copy=document.createElement('span');copy.className='inbox-copy';const name=document.createElement('strong');name.textContent=person.display_name;const hint=document.createElement('span');hint.textContent='Open conversation';copy.append(name,hint);button.append(avatar,copy);button.onclick=()=>openChat(person);box.appendChild(button);
   });
   if(!data?.length)box.textContent='No members found.';
 }
@@ -626,12 +776,18 @@ async function loadInbox(){
   if(!ids.length){box.textContent='No conversations yet.';return;}
   const {data:people,error:peopleError}=await db.from('looply_directory').select('user_id,display_name').in('user_id',ids);
   if(peopleError){box.textContent=peopleError.message;return;}
+  const {data:avatars}=await db.from('profiles').select('id,avatar_url').in('id',ids);
   ids.forEach(id=>{
     const person=(people||[]).find(x=>x.user_id===id)||{user_id:id,display_name:'Looply member'};
-    const button=document.createElement('button');
-    button.textContent=person.display_name+' — '+(latest.get(id).content||'').slice(0,35);
-    button.onclick=()=>openChat(person);
-    box.appendChild(button);
+    const profile=(avatars||[]).find(x=>x.id===id);
+    const button=document.createElement('button');button.className='inbox-person';button.type='button';
+    const avatar=document.createElement('span');avatar.className='inbox-avatar';
+    if(profile?.avatar_url){const img=document.createElement('img');img.src=profile.avatar_url;img.alt='';avatar.appendChild(img);}else avatar.textContent=(person.display_name||'L').slice(0,1).toUpperCase();
+    const copy=document.createElement('span');copy.className='inbox-copy';
+    const name=document.createElement('strong');name.textContent=person.display_name;
+    const preview=document.createElement('span');preview.textContent=latest.get(id).content||'Start a conversation';
+    copy.append(name,preview);button.append(avatar,copy);
+    button.onclick=()=>openChat(person);box.appendChild(button);
   });
 }
 
