@@ -157,9 +157,16 @@
     const SUPABASE_KEY = 'sb_publishable_V9UwQqCiwQ6EoGivIjBg3A_OrAvcJuq';
 
     const supabaseClient = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+  SUPABASE_URL,
+  SUPABASE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
+);
 
     let currentMode = 'signup';
 
