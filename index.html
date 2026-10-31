@@ -242,6 +242,7 @@ await showProfile();
 
 <script>
 async function showProfile() {
+document.getElementById('postsSection').style.display = 'none';
   const { data: { user }, error: userError } =
     await supabaseClient.auth.getUser();
 
@@ -249,7 +250,7 @@ async function showProfile() {
 
   document.getElementById('profile').style.display = 'block';
   document.getElementById('join').style.display = 'none';
-
+document.getElementById('postsSection').style.display = 'block';
   document.getElementById('profileName').textContent =
     user.user_metadata.full_name || 'Looply User';
 
@@ -270,10 +271,9 @@ async function showProfile() {
     document.getElementById('avatarImage').src =
       profile.avatar_url;
   }
+
+  await loadPosts();
 }
-
-
-
 async function editProfile() {
   const newName = prompt('Enter your name:');
   if (!newName) return;
@@ -353,5 +353,127 @@ async function uploadAvatar() {
   document.getElementById('avatarImage').src = photoUrl;
   alert('Profile photo uploaded successfully! 💜');
 }
-</script>
-</html>
+async function createPost() {
+  const file = document.getElementById('postFile').files[0];
+  const caption = document.getElementById('postCaption').value.trim();
+  const message = document.getElementById('postMessage');
+
+  if (!file) {
+    message.textContent = 'Please choose a photo or video.';
+    return;
+  }
+
+  if (!file.type.startsWith('image/') &&
+      !file.type.startsWith('video/')) {
+    message.textContent = 'Choose a valid photo or video.';
+    return;
+  }
+
+  if (file.size > 50 * 1024 * 1024) {
+    message.textContent = 'File must be smaller than 50 MB.';
+    return;
+  }
+
+  message.textContent = 'Uploading...';
+
+  try {
+    const { data: { user }, error: userError } =
+      await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      throw new Error('Please log in first.');
+    }
+
+    const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+    const filePath = user.id + '/' + Date.now() + '-' + file.name;
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from('posts')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabaseClient.storage
+      .from('posts')
+      .getPublicUrl(filePath);
+
+    const { error: postError } = await supabaseClient
+      .from('posts')
+      .insert({
+        user_id: user.id,
+        caption: caption,
+        image: mediaType === 'image' ? urlData.publicUrl : null,
+        video: mediaType === 'video' ? urlData.publicUrl : null,
+        media_type: mediaType
+      });
+
+    if (postError) throw postError;
+
+    message.textContent = 'Your post was shared! 💜';
+    document.getElementById('postCaption').value = '';
+    document.getElementById('postFile').value = '';
+    await loadPosts();
+
+  } catch (error) {
+    message.textContent = error.message;
+  }
+}
+
+async function loadPosts() {
+  const feed = document.getElementById('postsFeed');
+  feed.textContent = 'Loading posts...';
+
+  const { data, error } = await supabaseClient
+    .from('posts')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    feed.textContent = error.message;
+    return;
+  }
+
+  feed.replaceChildren();
+
+  data.forEach(post => {
+    const card = document.createElement('div');
+    card.style.cssText =
+      'background:white;padding:15px;margin:15px auto;max-width:500px;border-radius:15px;';
+
+    const caption = document.createElement('p');
+    caption.textContent = post.caption || '';
+    card.appendChild(caption);
+
+    const url = post.media_type === 'video' ? post.video : post.image;
+
+    if (url) {
+      const media = document.createElement(
+        post.media_type === 'video' ? 'video' : 'img'
+      );
+
+      media.src = url;
+      media.style.cssText = 'width:100%;max-height:400px;object-fit:contain;margin-top:10px;border-radius:10px;';
+
+      if (post.media_type === 'video') {
+        media.controls = true;
+      }
+
+      card.appendChild(media);
+    }
+
+    feed.appendChild(card);
+  });
+}</script>
+<section id="postsSection" style="display:none; padding:25px 7%; text-align:center;">
+  <h2>Share a moment 💜</h2>
+  <textarea id="postCaption" placeholder="What's happening?" style="width:100%;max-width:500px;padding:12px;margin:15px 0;border-radius:10px;"></textarea>
+  <br>
+  <input id="postFile" type="file" accept="image/*,video/*">
+  <br>
+  <button onclick="createPost()" style="padding:12px 22px;margin:15px;background:#793bdf;color:white;border:0;border-radius:20px;">
+    Share post
+  </button>
+  <p id="postMessage"></p>
+  <h2>Latest posts</h2>
+  <div id="postsFeed"></div>
+</section></html>
