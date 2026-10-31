@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1001,6 +1002,22 @@ const looplyAvatarStyle=document.createElement('style');
 looplyAvatarStyle.textContent='#avatarImage,.navAvatar,.inbox-avatar,.follow-list-avatar{background:#000!important} .post .post-author img{width:34px;height:34px;object-fit:cover}';
 document.head.appendChild(looplyAvatarStyle);
 
+
+/* Automatically register the signed-in user's real name before loading the feed. */
+const looplyOriginalStartAppForNames=startApp;
+startApp=async function(){
+  const authResult=await db.auth.getUser();
+  user=authResult.data?.user||null;
+  if(user){
+    const savedName=(user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split('@')[0]||'Looply User').trim();
+    const {error}=await db.from('looply_directory').upsert(
+      {user_id:user.id,display_name:savedName},
+      {onConflict:'user_id'}
+    );
+    if(error)console.warn('Could not save Looply display name:',error.message);
+  }
+  return looplyOriginalStartAppForNames();
+};
 
 restoreSession();
 setInterval(async()=>{
