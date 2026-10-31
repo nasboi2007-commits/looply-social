@@ -6,13 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Looply - Connect. Share. Belong.</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Arial,sans-serif;background:#f7f4ff;color:#24143d}
 header{padding:15px 5%;background:white;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .logo{font-size:28px;font-weight:900;color:#793bdf}
-.header-actions{display:flex;align-items:center;gap:8px}
+.header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .hero{padding:65px 7%;text-align:center;color:white;background:linear-gradient(120deg,#6334d9,#a33fda,#f044a5)}
 .hero h1{font-size:clamp(35px,7vw,60px);margin-bottom:18px}
 .hero p{font-size:18px;line-height:1.6}
@@ -45,28 +44,41 @@ footer{text-align:center;padding:25px;color:#766987}
 .comment-form button{margin:5px 0}
 .delete-comment{background:#ed45a5;font-size:12px;padding:6px 10px}
 .comment-status{font-size:13px;color:#766987;margin-top:5px}
-#notificationButton{margin:0;background:#f0e8ff;color:#6334d9;font-weight:bold}
+#notificationButton,#messagesButton{margin:0;background:#f0e8ff;color:#6334d9;font-weight:bold}
 #notificationCount{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:20px;background:#ed45a5;color:white;font-size:12px;margin-left:5px}
-#notificationsPanel{display:none;max-width:600px;margin:20px auto;background:white;padding:20px;border-radius:16px;text-align:left}
+#notificationsPanel,#messagesPanel{display:none;max-width:700px;margin:20px auto;background:white;padding:20px;border-radius:16px;text-align:left}
 .notification-item{padding:13px;margin:9px 0;border-radius:12px;background:#f7f4ff;border-left:4px solid #793bdf;overflow-wrap:anywhere}
 .notification-item.unread{background:#f0e8ff;border-left-color:#ed45a5}
 .notification-item p{line-height:1.5}
-.notification-time{font-size:12px;color:#766987;margin-top:5px}
+.notification-time,.message-muted{font-size:13px;color:#766987;margin-top:5px}
 .notification-empty{color:#766987;padding:15px 0}
+#messagesPanel h2{text-align:center;margin-bottom:12px}
+.message-person{display:block;width:100%;text-align:left;background:#f7f4ff;color:#24143d;margin:6px 0;padding:12px}
+.message-person small{display:block;color:#766987;margin-top:4px}
+#chatWindow{display:none;border:1px solid #eee;border-radius:12px;padding:12px;margin-top:12px}
+#chatMessages{max-height:320px;overflow-y:auto;padding:8px;background:#faf8ff;border-radius:10px}
+.chat-bubble{max-width:85%;padding:10px 12px;margin:7px 0;border-radius:12px;overflow-wrap:anywhere;white-space:pre-wrap}
+.chat-mine{background:#793bdf;color:white;margin-left:auto}
+.chat-theirs{background:#eee7ff;color:#24143d;margin-right:auto}
+#messageComposer{display:flex;gap:6px;align-items:center;margin-top:10px}
+#messageComposer textarea{flex:1;min-height:48px;margin:0;resize:vertical}
+#messageComposer button{margin:0}
 @media(max-width:420px){
 .logo{font-size:23px}
 header{padding:12px 4%}
-#notificationButton{padding:10px;font-size:12px}
+#notificationButton,#messagesButton{padding:9px;font-size:11px}
+#messageComposer{flex-direction:column}
+#messageComposer button{width:100%}
 }
 </style>
 </head>
-
 <body>
 
 <header>
 <div class="logo">Looply ✨</div>
 <div class="header-actions">
 <button type="button" id="notificationButton" onclick="toggleNotifications()">🔔 Notifications <span id="notificationCount">0</span></button>
+<button type="button" id="messagesButton" onclick="toggleMessages()">💬 Messages</button>
 </div>
 </header>
 
@@ -91,7 +103,6 @@ header{padding:12px 4%}
 <button type="button" id="signupTab" class="active" onclick="showForm('signup')">Sign up</button>
 <button type="button" id="loginTab" onclick="showForm('login')">Log in</button>
 </div>
-
 <form id="authForm">
 <input id="name" type="text" placeholder="Your name">
 <input id="email" type="email" placeholder="Email address" required>
@@ -120,6 +131,24 @@ header{padding:12px 4%}
 <button type="button" onclick="markAllNotificationsRead()">Mark all as read</button>
 </section>
 
+<section id="messagesPanel">
+<h2>💬 Looply Messages</h2>
+<input id="memberSearch" type="search" placeholder="Find a Looply member by name..." oninput="searchMessageUsers()">
+<div id="directoryResults"><p class="message-muted">Search for a member to start a conversation.</p></div>
+<h3 style="margin-top:18px">Your conversations</h3>
+<div id="inboxList"><p class="message-muted">Open Messages to load conversations.</p></div>
+<div id="chatWindow">
+<h3 id="chatTitle">Conversation</h3>
+<div id="chatMessages"></div>
+<form id="messageComposer">
+<textarea id="messageText" maxlength="3000" placeholder="Write a private message..." required></textarea>
+<button type="submit">Send</button>
+</form>
+<p id="chatStatus" class="message-muted"></p>
+<button type="button" onclick="closeLooplyChat()" style="background:#eee7ff;color:#6334d9">Close conversation</button>
+</div>
+</section>
+
 <section id="postsSection" style="display:none">
 <h2>Share a moment 💜</h2>
 <textarea id="postCaption" placeholder="What's happening?"></textarea>
@@ -145,6 +174,9 @@ SUPABASE_KEY,
 let currentMode='signup';
 let notificationPollingStarted=false;
 let notificationRequestBusy=false;
+let selectedChatUser=null;
+let messageSearchBusy=false;
+let messagePollingStarted=false;
 
 function showForm(mode){
 currentMode=mode;
@@ -176,21 +208,28 @@ document.getElementById('avatarImage').src=profile.avatar_url;
 await loadPosts();
 await loadNotifications();
 startNotificationPolling();
+startMessagePolling();
 }
 
 async function editProfile(){
 const newName=prompt('Enter your name:');
 if(!newName||!newName.trim())return;
+const cleanName=newName.trim();
 
 const {error}=await supabaseClient.auth.updateUser({
-data:{full_name:newName.trim()}
+data:{full_name:cleanName}
 });
 
-if(error)alert(error.message);
-else{
-document.getElementById('profileName').textContent=newName.trim();
-alert('Profile updated!');
+if(error){alert(error.message);return;}
+
+const {data:{user}}=await supabaseClient.auth.getUser();
+if(user){
+const {error:directoryError}=await supabaseClient.from('looply_directory')
+.upsert({user_id:user.id,display_name:cleanName});
+if(directoryError)console.log('Directory update:',directoryError.message);
 }
+document.getElementById('profileName').textContent=cleanName;
+alert('Profile updated!');
 }
 
 async function logout(){
@@ -210,7 +249,6 @@ if(userError||!user){alert('Please log in first.');return;}
 
 const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
 const path=user.id+'/'+Date.now()+'-'+safeName;
-
 const {error}=await supabaseClient.storage.from('avatars').upload(path,file);
 if(error){alert(error.message);return;}
 
@@ -219,7 +257,6 @@ const photoUrl=data.publicUrl;
 
 const {error:updateError}=await supabaseClient.from('profiles')
 .upsert({id:user.id,avatar_url:photoUrl});
-
 if(updateError){alert(updateError.message);return;}
 
 document.getElementById('avatarImage').src=photoUrl;
@@ -242,7 +279,6 @@ message.textContent='File must be smaller than 50 MB.';return;
 }
 
 message.textContent='Uploading...';
-
 const {data:{user},error:userError}=await supabaseClient.auth.getUser();
 if(userError||!user){message.textContent='Please log in first.';return;}
 
@@ -255,7 +291,6 @@ const {error:uploadError}=await supabaseClient.storage.from(bucket).upload(path,
 if(uploadError){message.textContent='Upload failed: '+uploadError.message;return;}
 
 const {data:urlData}=supabaseClient.storage.from(bucket).getPublicUrl(path);
-
 const {error:insertError}=await supabaseClient.from('posts').insert({
 user_id:user.id,
 caption:caption,
@@ -265,7 +300,6 @@ media_type:mediaType
 });
 
 if(insertError){message.textContent='Post failed: '+insertError.message;return;}
-
 message.textContent='Your post was shared! 💜';
 document.getElementById('postCaption').value='';
 fileInput.value='';
@@ -273,14 +307,12 @@ await loadPosts();
 }
 
 /* LOAD POSTS */
-
 async function loadPosts(){
 const feed=document.getElementById('postsFeed');
 feed.textContent='Loading posts...';
 
 const {data:posts,error}=await supabaseClient
 .from('posts').select('*').order('created_at',{ascending:false});
-
 if(error){feed.textContent=error.message;return;}
 
 const {data:{user},error:userError}=await supabaseClient.auth.getUser();
@@ -288,21 +320,14 @@ if(userError||!user){feed.textContent='Please log in first.';return;}
 
 const {data:likes,error:likesError}=await supabaseClient
 .from('likes').select('id,post_id,user_id');
-
 if(likesError){feed.textContent='Likes error: '+likesError.message;return;}
 
 const {data:comments,error:commentsError}=await supabaseClient
-.from('comments')
-.select('id,post_id,user_id,content,created_at')
+.from('comments').select('id,post_id,user_id,content,created_at')
 .order('created_at',{ascending:true});
-
-if(commentsError){
-feed.textContent='Comments error: '+commentsError.message;
-return;
-}
+if(commentsError){feed.textContent='Comments error: '+commentsError.message;return;}
 
 feed.replaceChildren();
-
 if(!posts||posts.length===0){
 feed.textContent='No posts yet. Be the first to share! 💜';
 return;
@@ -318,24 +343,18 @@ card.appendChild(caption);
 
 const isVideo=post.media_type==='video'||(!post.image&&!!post.video);
 const url=isVideo?post.video:post.image;
-
 if(url){
 const media=document.createElement(isVideo?'video':'img');
 media.src=url;
-if(isVideo){
-media.controls=true;
-media.playsInline=true;
-}
+if(isVideo){media.controls=true;media.playsInline=true;}
 card.appendChild(media);
 }
 
 /* LIKE BUTTON */
-
 const postLikes=(likes||[]).filter(like=>like.post_id===post.id);
 let liked=postLikes.some(like=>like.user_id===user.id);
 let likeCount=postLikes.length;
 let likeBusy=false;
-
 const likeButton=document.createElement('button');
 likeButton.type='button';
 likeButton.className='like-button';
@@ -344,19 +363,13 @@ function updateLikeButton(){
 likeButton.textContent=(liked?'❤️':'🤍')+' Like ('+likeCount+')';
 likeButton.style.background=liked?'#ed45a5':'#793bdf';
 }
-
 updateLikeButton();
 
 likeButton.addEventListener('click',async()=>{
 if(likeBusy)return;
-
 likeBusy=true;
 likeButton.disabled=true;
-
-const oldLiked=liked;
-const oldCount=likeCount;
-const nextLiked=!liked;
-
+const oldLiked=liked,oldCount=likeCount,nextLiked=!liked;
 liked=nextLiked;
 likeCount=Math.max(0,likeCount+(nextLiked?1:-1));
 updateLikeButton();
@@ -364,53 +377,34 @@ updateLikeButton();
 try{
 const {data:{user:activeUser},error:userError}=await supabaseClient.auth.getUser();
 if(userError||!activeUser)throw new Error('Please log in first.');
-
 let result;
-
 if(nextLiked){
-result=await supabaseClient.from('likes').insert({
-post_id:post.id,
-user_id:activeUser.id
-});
+result=await supabaseClient.from('likes').insert({post_id:post.id,user_id:activeUser.id});
 }else{
-result=await supabaseClient.from('likes').delete()
-.eq('post_id',post.id).eq('user_id',activeUser.id);
+result=await supabaseClient.from('likes').delete().eq('post_id',post.id).eq('user_id',activeUser.id);
 }
-
 if(result.error)throw result.error;
-
 }catch(error){
-liked=oldLiked;
-likeCount=oldCount;
-updateLikeButton();
+liked=oldLiked;likeCount=oldCount;updateLikeButton();
 alert('Could not update like: '+error.message);
 }finally{
-likeBusy=false;
-likeButton.disabled=false;
+likeBusy=false;likeButton.disabled=false;
 }
 });
-
 card.appendChild(likeButton);
 
 /* COMMENTS */
-
 const commentArea=document.createElement('div');
 commentArea.className='comment-area';
-
 const commentTitle=document.createElement('p');
 commentTitle.className='comment-title';
 commentTitle.textContent='💬 Comments';
 commentArea.appendChild(commentTitle);
-
 const commentList=document.createElement('div');
 
 function renderComments(){
 commentList.replaceChildren();
-
-const postComments=(comments||[]).filter(
-comment=>comment.post_id===post.id
-);
-
+const postComments=(comments||[]).filter(comment=>comment.post_id===post.id);
 if(postComments.length===0){
 const empty=document.createElement('p');
 empty.className='comment-status';
@@ -418,128 +412,77 @@ empty.textContent='No comments yet. Be the first!';
 commentList.appendChild(empty);
 return;
 }
-
 postComments.forEach(comment=>{
 const item=document.createElement('div');
 item.className='comment-item';
-
 const author=document.createElement('p');
 author.className='comment-author';
 author.textContent=comment.user_id===user.id?'You':'Looply member';
-
 const content=document.createElement('p');
 content.className='comment-content';
 content.textContent=comment.content;
-
-item.appendChild(author);
-item.appendChild(content);
+item.appendChild(author);item.appendChild(content);
 
 if(comment.user_id===user.id){
 const deleteButton=document.createElement('button');
 deleteButton.type='button';
 deleteButton.className='delete-comment';
 deleteButton.textContent='Delete';
-
 deleteButton.addEventListener('click',async()=>{
 if(!confirm('Delete this comment?'))return;
-
 deleteButton.disabled=true;
-
-const {error}=await supabaseClient
-.from('comments').delete()
-.eq('id',comment.id)
-.eq('user_id',user.id);
-
-if(error){
-deleteButton.disabled=false;
-alert('Could not delete comment: '+error.message);
-return;
-}
-
+const {error}=await supabaseClient.from('comments').delete()
+.eq('id',comment.id).eq('user_id',user.id);
+if(error){deleteButton.disabled=false;alert('Could not delete comment: '+error.message);return;}
 const index=comments.findIndex(c=>c.id===comment.id);
 if(index!==-1)comments.splice(index,1);
-
 renderComments();
 });
-
 item.appendChild(deleteButton);
 }
-
 commentList.appendChild(item);
 });
 }
 
 renderComments();
 commentArea.appendChild(commentList);
-
 const commentForm=document.createElement('form');
 commentForm.className='comment-form';
-
 const commentInput=document.createElement('textarea');
 commentInput.placeholder='Write a comment...';
 commentInput.maxLength=1000;
 commentInput.required=true;
-
 const sendButton=document.createElement('button');
-sendButton.type='submit';
-sendButton.textContent='Send';
-
-commentForm.appendChild(commentInput);
-commentForm.appendChild(sendButton);
-
+sendButton.type='submit';sendButton.textContent='Send';
+commentForm.appendChild(commentInput);commentForm.appendChild(sendButton);
 const status=document.createElement('p');
 status.className='comment-status';
 
 commentForm.addEventListener('submit',async(event)=>{
 event.preventDefault();
-
 const content=commentInput.value.trim();
 if(!content)return;
-
-sendButton.disabled=true;
-status.textContent='Sending...';
-
+sendButton.disabled=true;status.textContent='Sending...';
 try{
 const {data:{user:activeUser},error:userError}=await supabaseClient.auth.getUser();
-
-if(userError||!activeUser){
-throw new Error('Please log in first.');
-}
-
-const {data:newComment,error}=await supabaseClient
-.from('comments')
-.insert({
-post_id:post.id,
-user_id:activeUser.id,
-content:content
-})
-.select('id,post_id,user_id,content,created_at')
-.single();
-
+if(userError||!activeUser)throw new Error('Please log in first.');
+const {data:newComment,error}=await supabaseClient.from('comments')
+.insert({post_id:post.id,user_id:activeUser.id,content})
+.select('id,post_id,user_id,content,created_at').single();
 if(error)throw error;
-
 comments.push(newComment);
-commentInput.value='';
-status.textContent='Comment posted! 💜';
-renderComments();
-
-}catch(error){
-status.textContent='Comment failed: '+error.message;
-}finally{
-sendButton.disabled=false;
-}
+commentInput.value='';status.textContent='Comment posted! 💜';renderComments();
+}catch(error){status.textContent='Comment failed: '+error.message;}
+finally{sendButton.disabled=false;}
 });
-
 commentArea.appendChild(commentForm);
 commentArea.appendChild(status);
-
 card.appendChild(commentArea);
 feed.appendChild(card);
 });
 }
 
 /* NOTIFICATIONS */
-
 function toggleNotifications(){
 const panel=document.getElementById('notificationsPanel');
 const opening=panel.style.display!=='block';
@@ -550,7 +493,6 @@ if(opening)loadNotifications();
 async function loadNotifications(){
 if(notificationRequestBusy)return;
 notificationRequestBusy=true;
-
 const list=document.getElementById('notificationsList');
 const status=document.getElementById('notificationStatus');
 const count=document.getElementById('notificationCount');
@@ -558,22 +500,15 @@ const count=document.getElementById('notificationCount');
 try{
 const {data:{user},error:userError}=await supabaseClient.auth.getUser();
 if(userError||!user)return;
-
-const {data:items,error}=await supabaseClient
-.from('notifications')
+const {data:items,error}=await supabaseClient.from('notifications')
 .select('id,actor_id,post_id,comment_id,type,is_read,created_at')
-.eq('recipient_id',user.id)
-.order('created_at',{ascending:false})
-.limit(50);
-
+.eq('recipient_id',user.id).order('created_at',{ascending:false}).limit(50);
 if(error)throw error;
 
 const notifications=items||[];
 const unread=notifications.filter(item=>!item.is_read).length;
-
 count.textContent=String(unread);
 count.style.display=unread>0?'inline-flex':'none';
-
 list.replaceChildren();
 
 if(notifications.length===0){
@@ -581,78 +516,44 @@ status.textContent='You have no notifications yet. When someone likes or comment
 status.style.display='block';
 return;
 }
-
-status.textContent='';
-status.style.display='none';
+status.textContent='';status.style.display='none';
 
 notifications.forEach(item=>{
 const row=document.createElement('div');
 row.className='notification-item'+(item.is_read?'':' unread');
-
 const message=document.createElement('p');
-message.textContent=item.type==='like'
-?'❤️ Someone liked your post.'
-:'💬 Someone commented on your post.';
-
+message.textContent=item.type==='like'?'❤️ Someone liked your post.':'💬 Someone commented on your post.';
 const time=document.createElement('p');
 time.className='notification-time';
 const date=new Date(item.created_at);
 time.textContent=Number.isNaN(date.getTime())?'':date.toLocaleString();
-
 const markButton=document.createElement('button');
 markButton.type='button';
 markButton.textContent=item.is_read?'Read':'Mark as read';
 markButton.disabled=!!item.is_read;
-markButton.style.fontSize='12px';
-markButton.style.padding='7px 10px';
-
+markButton.style.fontSize='12px';markButton.style.padding='7px 10px';
 markButton.addEventListener('click',async()=>{
 markButton.disabled=true;
-
-const {error:updateError}=await supabaseClient
-.from('notifications')
-.update({is_read:true})
-.eq('id',item.id)
-.eq('recipient_id',user.id);
-
-if(updateError){
-markButton.disabled=false;
-alert('Could not update notification: '+updateError.message);
-return;
-}
-
+const {error:updateError}=await supabaseClient.from('notifications')
+.update({is_read:true}).eq('id',item.id).eq('recipient_id',user.id);
+if(updateError){markButton.disabled=false;alert('Could not update notification: '+updateError.message);return;}
 loadNotifications();
 });
-
-row.appendChild(message);
-row.appendChild(time);
-row.appendChild(markButton);
+row.appendChild(message);row.appendChild(time);row.appendChild(markButton);
 list.appendChild(row);
 });
-
 }catch(error){
 status.textContent='Could not load notifications: '+error.message;
 status.style.display='block';
-}finally{
-notificationRequestBusy=false;
-}
+}finally{notificationRequestBusy=false;}
 }
 
 async function markAllNotificationsRead(){
 const {data:{user},error:userError}=await supabaseClient.auth.getUser();
 if(userError||!user){alert('Please log in first.');return;}
-
-const {error}=await supabaseClient
-.from('notifications')
-.update({is_read:true})
-.eq('recipient_id',user.id)
-.eq('is_read',false);
-
-if(error){
-alert('Could not mark notifications as read: '+error.message);
-return;
-}
-
+const {error}=await supabaseClient.from('notifications')
+.update({is_read:true}).eq('recipient_id',user.id).eq('is_read',false);
+if(error){alert('Could not mark notifications as read: '+error.message);return;}
 await loadNotifications();
 }
 
@@ -662,11 +563,188 @@ notificationPollingStarted=true;
 window.setInterval(loadNotifications,15000);
 }
 
-/* AUTHENTICATION */
+/* PRIVATE MESSAGING */
+function toggleMessages(){
+const panel=document.getElementById('messagesPanel');
+const opening=panel.style.display!=='block';
+panel.style.display=opening?'block':'none';
+if(opening){
+loadInbox();
+document.getElementById('memberSearch').focus();
+}
+}
 
+function closeLooplyChat(){
+selectedChatUser=null;
+document.getElementById('chatWindow').style.display='none';
+}
+
+function addMessagePerson(box,person,detail){
+const button=document.createElement('button');
+button.type='button';
+button.className='message-person';
+button.textContent=person.display_name||'Looply member';
+const small=document.createElement('small');
+small.textContent=detail||'Tap to message';
+button.appendChild(small);
+button.addEventListener('click',()=>openLooplyChat(person));
+box.appendChild(button);
+}
+
+async function searchMessageUsers(){
+if(messageSearchBusy)return;
+const term=document.getElementById('memberSearch').value.trim();
+const box=document.getElementById('directoryResults');
+if(term.length<2){
+box.textContent='Type at least 2 letters to search.';
+return;
+}
+messageSearchBusy=true;
+box.textContent='Searching...';
+try{
+const {data:{user},error:ue}=await supabaseClient.auth.getUser();
+if(ue||!user)throw new Error('Please log in first.');
+const {data,error}=await supabaseClient.from('looply_directory')
+.select('user_id,display_name')
+.ilike('display_name','%'+term+'%')
+.neq('user_id',user.id).limit(20);
+if(error)throw error;
+box.replaceChildren();
+if(!data||data.length===0){
+box.textContent='No members found with that name.';
+}else{
+data.forEach(person=>addMessagePerson(box,person,'Start a private conversation'));
+}
+}catch(error){
+box.textContent='Search failed: '+error.message;
+}finally{messageSearchBusy=false;}
+}
+
+async function loadInbox(){
+const box=document.getElementById('inboxList');
+if(!box)return;
+box.textContent='Loading conversations...';
+try{
+const {data:{user},error:ue}=await supabaseClient.auth.getUser();
+if(ue||!user)throw new Error('Please log in first.');
+const {data:messages,error}=await supabaseClient.from('messages')
+.select('id,sender_id,receiver_id,content,created_at')
+.or('sender_id.eq.'+user.id+',receiver_id.eq.'+user.id)
+.order('created_at',{ascending:false}).limit(200);
+if(error)throw error;
+
+const latest=new Map();
+(messages||[]).forEach(message=>{
+const otherId=message.sender_id===user.id?message.receiver_id:message.sender_id;
+if(!latest.has(otherId))latest.set(otherId,message);
+});
+const ids=Array.from(latest.keys());
+box.replaceChildren();
+if(ids.length===0){
+box.textContent='No conversations yet. Search for a member above to send your first message.';
+return;
+}
+const {data:people,error:peopleError}=await supabaseClient.from('looply_directory')
+.select('user_id,display_name').in('user_id',ids);
+if(peopleError)throw peopleError;
+const peopleMap=new Map((people||[]).map(person=>[person.user_id,person]));
+ids.forEach(id=>{
+const person=peopleMap.get(id)||{user_id:id,display_name:'Looply member'};
+addMessagePerson(box,person,(latest.get(id).content||'').slice(0,65));
+});
+}catch(error){
+box.textContent='Could not load conversations: '+error.message;
+}
+}
+
+async function openLooplyChat(person){
+selectedChatUser=person;
+document.getElementById('chatWindow').style.display='block';
+document.getElementById('chatTitle').textContent='Chat with '+(person.display_name||'Looply member');
+await loadLooplyChat();
+}
+
+async function loadLooplyChat(){
+if(!selectedChatUser)return;
+const box=document.getElementById('chatMessages');
+const status=document.getElementById('chatStatus');
+try{
+const {data:{user},error:ue}=await supabaseClient.auth.getUser();
+if(ue||!user)throw new Error('Please log in first.');
+const other=selectedChatUser.user_id;
+const filter='and(sender_id.eq.'+user.id+',receiver_id.eq.'+other+'),and(sender_id.eq.'+other+',receiver_id.eq.'+user.id+')';
+const {data:messages,error}=await supabaseClient.from('messages')
+.select('id,sender_id,receiver_id,content,is_read,created_at')
+.or(filter).order('created_at',{ascending:true}).limit(200);
+if(error)throw error;
+
+box.replaceChildren();
+if(!messages||messages.length===0){
+box.textContent='Say hello and start the conversation!';
+}else{
+messages.forEach(message=>{
+const bubble=document.createElement('div');
+bubble.className='chat-bubble '+(message.sender_id===user.id?'chat-mine':'chat-theirs');
+bubble.textContent=message.content;
+const time=document.createElement('small');
+time.style.display='block';
+time.style.marginTop='5px';
+time.textContent=new Date(message.created_at).toLocaleString();
+bubble.appendChild(time);
+box.appendChild(bubble);
+});
+box.scrollTop=box.scrollHeight;
+}
+
+const {error:readError}=await supabaseClient.from('messages')
+.update({is_read:true})
+.eq('sender_id',other).eq('receiver_id',user.id).eq('is_read',false);
+if(readError)throw readError;
+status.textContent='Private conversation';
+}catch(error){
+status.textContent='Could not load messages: '+error.message;
+}
+}
+
+document.getElementById('messageComposer').addEventListener('submit',async function(event){
+event.preventDefault();
+const input=document.getElementById('messageText');
+const send=this.querySelector('button[type="submit"]');
+const content=input.value.trim();
+if(!content||!selectedChatUser)return;
+send.disabled=true;
+document.getElementById('chatStatus').textContent='Sending...';
+try{
+const {data:{user},error:ue}=await supabaseClient.auth.getUser();
+if(ue||!user)throw new Error('Please log in first.');
+const {error}=await supabaseClient.from('messages').insert({
+sender_id:user.id,
+receiver_id:selectedChatUser.user_id,
+content:content
+});
+if(error)throw error;
+input.value='';
+await loadLooplyChat();
+await loadInbox();
+}catch(error){
+document.getElementById('chatStatus').textContent='Message failed: '+error.message;
+}finally{send.disabled=false;}
+});
+
+function startMessagePolling(){
+if(messagePollingStarted)return;
+messagePollingStarted=true;
+window.setInterval(()=>{
+if(document.getElementById('messagesPanel').style.display==='block'){
+if(selectedChatUser)loadLooplyChat();
+else loadInbox();
+}
+},7000);
+}
+
+/* AUTHENTICATION */
 document.getElementById('authForm').addEventListener('submit',async function(event){
 event.preventDefault();
-
 const name=document.getElementById('name').value.trim();
 const email=document.getElementById('email').value.trim();
 const password=document.getElementById('password').value;
@@ -679,53 +757,37 @@ message.textContent='Please wait...';
 try{
 if(currentMode==='signup'){
 const {data,error}=await supabaseClient.auth.signUp({
-email,
-password,
+email,password,
 options:{
 data:{full_name:name},
 emailRedirectTo:'https://nasboi2007-commits.github.io/looply-social/'
 }
 });
-
 if(error)throw error;
-
 if(data.session){
 message.textContent='Account created successfully!';
 await showProfile();
 }else{
 message.textContent='Account created! Check your email to confirm your account.';
 }
-
 }else{
-const {error}=await supabaseClient.auth.signInWithPassword({
-email,
-password
-});
-
+const {error}=await supabaseClient.auth.signInWithPassword({email,password});
 if(error)throw error;
-
 message.textContent='You are logged in successfully!';
 await showProfile();
 }
-
 }catch(error){
 message.textContent=error.message||'Something went wrong.';
-}finally{
-button.disabled=false;
-}
+}finally{button.disabled=false;}
 });
 
 showForm('signup');
 
 async function restoreLoginSession(){
 const {data,error}=await supabaseClient.auth.getSession();
-if(!error&&data.session){
-await showProfile();
+if(!error&&data.session)await showProfile();
 }
-}
-
 restoreLoginSession();
-
 </script>
 </body>
 </html>
