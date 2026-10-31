@@ -1,546 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Looply - Connect. Share. Belong.</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f4ff;
-      color: #24143d;
-    }
-    header {
-      padding: 20px 7%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: white;
-    }
-    .logo {
-      font-size: 28px;
-      font-weight: 900;
-      background: linear-gradient(90deg,#793bdf,#f044a5);
-      color: transparent;
-      background-clip: text;
-    }
-    .hero {
-      padding: 75px 7%;
-      text-align: center;
-      color: white;
-      background: linear-gradient(120deg,#6334d9,#a33fda,#f044a5);
-    }
-    .hero h1 { font-size: clamp(38px,7vw,65px); margin-bottom: 18px; }
-    .hero p { font-size: 18px; line-height: 1.6; max-width: 600px; margin: auto; }
-    .hero a {
-      display: inline-block;
-      margin-top: 28px;
-      padding: 15px 30px;
-      border-radius: 30px;
-      background: white;
-      color: #793bdf;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    section { padding: 55px 7%; text-align: center; }
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(210px,1fr));
-      gap: 20px;
-      margin-top: 30px;
-    }
-    .feature {
-      background: white;
-      padding: 28px 20px;
-      border-radius: 20px;
-      box-shadow: 0 8px 25px #39205b12;
-    }
-    .feature .emoji { font-size: 38px; }
-    .feature h3 { margin: 14px 0 8px; }
-    .auth {
-      max-width: 420px;
-      margin: 10px auto 60px;
-      padding: 30px;
-      background: white;
-      border-radius: 22px;
-      box-shadow: 0 10px 35px #39205b18;
-    }
-    .auth h2 { margin-bottom: 20px; }
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tabs button {
-      flex: 1;
-      padding: 12px;
-      border: 0;
-      border-radius: 10px;
-      background: #eee7ff;
-      color: #6334d9;
-      font-weight: bold;
-    }
-    .tabs button.active { background: #793bdf; color: white; }
-    input {
-      width: 100%;
-      padding: 14px;
-      margin: 8px 0;
-      border: 1px solid #ddd3ef;
-      border-radius: 10px;
-      font-size: 16px;
-    }
-    .submit {
-      width: 100%;
-      padding: 15px;
-      margin-top: 12px;
-      border: 0;
-      border-radius: 12px;
-      color: white;
-      font-size: 16px;
-      font-weight: bold;
-      background: linear-gradient(90deg,#793bdf,#ed45a5);
-    }
-    #message { margin-top: 15px; font-size: 14px; line-height: 1.5; }
-    footer { padding: 25px; text-align: center; color: #766987; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Looply - Connect. Share. Belong.</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f7f4ff;color:#24143d}
+header{padding:20px 7%;background:white}
+.logo{font-size:28px;font-weight:900;color:#793bdf}
+.hero{padding:65px 7%;text-align:center;color:white;background:linear-gradient(120deg,#6334d9,#a33fda,#f044a5)}
+.hero h1{font-size:clamp(35px,7vw,60px);margin-bottom:18px}
+.hero p{font-size:18px;line-height:1.6}
+.hero a{display:inline-block;margin-top:25px;padding:15px 30px;border-radius:30px;background:white;color:#793bdf;text-decoration:none;font-weight:bold}
+section{padding:35px 7%;text-align:center}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:25px}
+.feature,.auth{background:white;padding:25px;border-radius:18px;margin:15px auto;max-width:500px}
+.feature .emoji{font-size:35px}
+.auth{max-width:420px;margin:20px auto 50px}
+input,textarea{width:100%;padding:14px;margin:8px 0;border:1px solid #ddd3ef;border-radius:10px;font-size:16px}
+textarea{min-height:90px}
+button{cursor:pointer;padding:12px 20px;border:0;border-radius:12px;background:#793bdf;color:white;margin:5px}
+.tabs{display:flex;gap:10px;margin:20px 0}
+.tabs button{flex:1;background:#eee7ff;color:#6334d9}
+.tabs button.active{background:#793bdf;color:white}
+.submit{width:100%;padding:15px;background:linear-gradient(90deg,#793bdf,#ed45a5);font-weight:bold}
+#message,#postMessage{margin-top:12px}
+footer{text-align:center;padding:25px;color:#766987}
+.post{background:white;padding:15px;margin:15px auto;max-width:500px;border-radius:15px;text-align:left}
+.post img,.post video{width:100%;max-height:400px;object-fit:contain;margin-top:10px;border-radius:10px}
+</style>
 </head>
 <body>
-  <header>
-    <div class="logo">Looply ✨</div>
-  </header>
 
-  <div class="hero">
-    <h1>Your people. Your moments. Your Loop.</h1>
-    <p>Meet new people, share your favourite moments, and stay connected with the people who matter.</p>
-    <a href="#join">Join Looply today</a>
-  </div>
+<header><div class="logo">Looply ✨</div></header>
 
-  <section>
-    <h2>A place to connect and share</h2>
-    <div class="features">
-      <div class="feature">
-        <div class="emoji">📸</div>
-        <h3>Share moments</h3>
-        <p>Share photos and special moments with your community.</p>
-      </div>
-      <div class="feature">
-        <div class="emoji">❤️</div>
-        <h3>Show some love</h3>
-        <p>Like and comment on posts from people you follow.</p>
-      </div>
-      <div class="feature">
-        <div class="emoji">🌍</div>
-        <h3>Find your people</h3>
-        <p>Discover people, make friends, and build connections.</p>
-      </div>
-    </div>
-  </section>
-
-  <div class="auth" id="join">
-    <h2>Welcome to Looply 💜</h2>
-    <div class="tabs">
-      <button id="signupTab" class="active" onclick="showForm('signup')">Sign up</button>
-      <button id="loginTab" onclick="showForm('login')">Log in</button>
-    </div>
-
-    <form id="authForm">
-      <input id="name" type="text" placeholder="Your name">
-      <input id="email" type="email" placeholder="Email address" required>
-      <input id="password" type="password" placeholder="Password (at least 6 characters)" required>
-      <button class="submit" id="submitButton" type="submit">Create account</button>
-    </form>
-    <p id="message"></p>
-  </div>
-
-  <footer>© 2026 Looply. Connect. Share. Belong. 💜</footer>
-
-  <script>
-    const SUPABASE_URL = 'https://fmnlkovksnwmyultyohe.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_V9UwQqCiwQ6EoGivIjBg3A_OrAvcJuq';
-
-    const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  }
-);
-
-    let currentMode = 'signup';
-
-    function showForm(mode) {
-      currentMode = mode;
-      document.getElementById('name').style.display =
-        mode === 'signup' ? 'block' : 'none';
-      document.getElementById('signupTab').classList.toggle('active', mode === 'signup');
-      document.getElementById('loginTab').classList.toggle('active', mode === 'login');
-      document.getElementById('submitButton').textContent =
-        mode === 'signup' ? 'Create account' : 'Log in';
-      document.getElementById('message').textContent = '';
-    }
-
-    document.getElementById('authForm').addEventListener('submit', async function(event) {
-      event.preventDefault();
-
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const message = document.getElementById('message');
-      const button = document.getElementById('submitButton');
-
-      button.disabled = true;
-      message.textContent = 'Please wait...';
-
-      try {
-        if (currentMode === 'signup') {
-          const { error } = await supabaseClient.auth.signUp({
-            email,
-            password,
-            options: {
-              data: { full_name: name },
-              emailRedirectTo: 'https://nasboi2007-commits.github.io/looply-social/'
-            }
-          });
-          if (error) throw error;
-          message.textContent = 'Account created! Check your email to confirm your account.';
-        } else {
-          const { error } = await supabaseClient.auth.signInWithPassword({
-            email,
-            password
-          });
-          if (error) throw error;
-          message.textContent = 'You are logged in successfully!';
-await showProfile();
-        }
-      } catch (error) {
-        message.textContent = error.message;
-      } finally {
-        button.disabled = false;
-      }
-    });
-
-    showForm('signup');
-  </script>
-</body>
-<section id="profile" style="display:none; padding:30px 7%; text-align:center;">
-  <h2>My Looply Profile 💜</h2>
-  <div style="margin:20px auto;">
-  <img id="avatarImage" src="" alt="Profile photo"
-    style="width:90px;height:90px;border-radius:50%;object-fit:cover;object-position:center;background:#eee0ff;">
-  <br>
-  <input id="avatarFile" type="file" accept="image/*">
-  <button onclick="uploadAvatar()"
-    style="padding:12px 22px;border:0;border-radius:20px;background:#793bdf;color:white;">
-    Upload photo
-  </button>
+<div class="hero">
+<h1>Your people. Your moments. Your Loop.</h1>
+<p>Meet new people, share your favourite moments, and stay connected.</p>
+<a href="#join">Join Looply today</a>
 </div>
-  <h3 id="profileName">Your Name</h3>
-  <p id="profileEmail"></p>
-  <p id="profileBio">Welcome to my Looply profile!</p>
-  <button onclick="editProfile()" style="padding:12px 22px; margin-top:15px; border:0; border-radius:20px; background:#793bdf; color:white;">
-    Edit profile
-  </button>
-  <button onclick="logout()" style="padding:12px 22px; margin-top:15px; border:0; border-radius:20px; background:#ed45a5; color:white;">
-    Log out
-  </button>
+
+<section>
+<h2>A place to connect and share</h2>
+<div class="features">
+<div class="feature"><div class="emoji">📸</div><h3>Share moments</h3><p>Share photos and special moments.</p></div>
+<div class="feature"><div class="emoji">❤️</div><h3>Show some love</h3><p>Connect with your community.</p></div>
+<div class="feature"><div class="emoji">🌍</div><h3>Find your people</h3><p>Discover people and make friends.</p></div>
+</div>
 </section>
 
+<div class="auth" id="join">
+<h2>Welcome to Looply 💜</h2>
+<div class="tabs">
+<button type="button" id="signupTab" class="active" onclick="showForm('signup')">Sign up</button>
+<button type="button" id="loginTab" onclick="showForm('login')">Log in</button>
+</div>
+<form id="authForm">
+<input id="name" type="text" placeholder="Your name">
+<input id="email" type="email" placeholder="Email address" required>
+<input id="password" type="password" placeholder="Password (at least 6 characters)" required>
+<button class="submit" id="submitButton" type="submit">Create account</button>
+</form>
+<p id="message"></p>
+</div>
+
+<section id="profile" style="display:none">
+<h2>My Looply Profile 💜</h2>
+<img id="avatarImage" alt="Profile photo" style="width:90px;height:90px;border-radius:50%;object-fit:cover;background:#eee0ff">
+<input id="avatarFile" type="file" accept="image/*">
+<button type="button" onclick="uploadAvatar()">Upload photo</button>
+<h3 id="profileName">Your Name</h3>
+<p id="profileEmail"></p>
+<p>Welcome to my Looply profile!</p>
+<button type="button" onclick="editProfile()">Edit profile</button>
+<button type="button" onclick="logout()" style="background:#ed45a5">Log out</button>
+</section>
+
+<section id="postsSection" style="display:none">
+<h2>Share a moment 💜</h2>
+<textarea id="postCaption" placeholder="What's happening?"></textarea>
+<input id="postFile" type="file" accept="image/*,video/*">
+<button type="button" onclick="createPost()">Share post</button>
+<p id="postMessage"></p>
+<h2>Latest posts</h2>
+<div id="postsFeed"></div>
+</section>
+
+<footer>© 2026 Looply. Connect. Share. Belong. 💜</footer>
+
 <script>
-async function showProfile() {
-document.getElementById('postsSection').style.display = 'none';
-  const { data: { user }, error: userError } =
-    await supabaseClient.auth.getUser();
+const SUPABASE_URL='https://fmnlkovksnwmyultyohe.supabase.co';
+const SUPABASE_KEY='sb_publishable_V9UwQqCiwQ6EoGivIjBg3A_OrAvcJuq';
 
-  if (userError || !user) return;
+const supabaseClient=window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY,
+{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
+);
 
-  document.getElementById('profile').style.display = 'block';
-  document.getElementById('join').style.display = 'none';
-document.getElementById('postsSection').style.display = 'block';
-  document.getElementById('profileName').textContent =
-    user.user_metadata.full_name || 'Looply User';
+let currentMode='signup';
 
-  document.getElementById('profileEmail').textContent = user.email;
-
-  const { data: profile, error } = await supabaseClient
-    .from('profiles')
-    .select('avatar_url')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (error) {
-    console.error(error.message);
-    return;
-  }
-
-    if (profile && profile.avatar_url) {
-    document.getElementById('avatarImage').src =
-      profile.avatar_url;
-  }
-
-  await loadPosts();
-}
-async function editProfile() {
-  const newName = prompt('Enter your name:');
-  if (!newName) return;
-
-  const { error } = await supabaseClient.auth.updateUser({
-    data: { full_name: newName }
-  });
-
-  if (error) {
-    alert(error.message);
-  } else {
-    document.getElementById('profileName').textContent = newName;
-    alert('Profile updated!');
-  }
+function showForm(mode){
+currentMode=mode;
+document.getElementById('name').style.display=mode==='signup'?'block':'none';
+document.getElementById('name').required=mode==='signup';
+document.getElementById('signupTab').classList.toggle('active',mode==='signup');
+document.getElementById('loginTab').classList.toggle('active',mode==='login');
+document.getElementById('submitButton').textContent=mode==='signup'?'Create account':'Log in';
+document.getElementById('message').textContent='';
 }
 
-async function logout() {
-  await supabaseClient.auth.signOut();
-  location.reload();
+async function showProfile(){
+const {data:{user},error}=await supabaseClient.auth.getUser();
+if(error||!user)return;
+
+document.getElementById('join').style.display='none';
+document.getElementById('profile').style.display='block';
+document.getElementById('postsSection').style.display='block';
+document.getElementById('profileName').textContent=user.user_metadata?.full_name||'Looply User';
+document.getElementById('profileEmail').textContent=user.email||'';
+
+const {data:profile}=await supabaseClient.from('profiles')
+.select('avatar_url').eq('id',user.id).maybeSingle();
+
+if(profile?.avatar_url){
+document.getElementById('avatarImage').src=profile.avatar_url;
+}
+await loadPosts();
 }
 
-async function uploadAvatar() {
-  const file = document.getElementById('avatarFile').files[0];
-
-  if (!file) {
-    alert('Please choose a photo first.');
-    return;
-  }
-
-  if (!file.type.startsWith('image/')) {
-    alert('Please choose an image file.');
-    return;
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    alert('Photo must be smaller than 5 MB.');
-    return;
-  }
-
-  const { data: { user }, error: userError } =
-    await supabaseClient.auth.getUser();
-
-  if (userError || !user) {
-    alert('Please log in first.');
-    return;
-  }
-
-  const filePath = user.id + '/' + Date.now() + '-' + file.name;
-
-  const { error } = await supabaseClient.storage
-    .from('Avatars')
-    .upload(filePath, file);
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  const { data } = supabaseClient.storage
-    .from('Avatars')
-    .getPublicUrl(filePath);
-
-  const photoUrl = data.publicUrl;
-
-  const { error: updateError } = await supabaseClient
-  .from('profiles')
-  .upsert({
-    id: user.id,
-    avatar_url: photoUrl
-  });
-
-  if (updateError) {
-    alert(updateError.message);
-    return;
-  }
-
-  document.getElementById('avatarImage').src = photoUrl;
-  alert('Profile photo uploaded successfully! 💜');
+async function editProfile(){
+const newName=prompt('Enter your name:');
+if(!newName||!newName.trim())return;
+const {error}=await supabaseClient.auth.updateUser({data:{full_name:newName.trim()}});
+if(error)alert(error.message);
+else{
+document.getElementById('profileName').textContent=newName.trim();
+alert('Profile updated!');
 }
-async function createPost() {
-  const caption = document.getElementById('caption').value;
-  const fileInput = document.getElementById('postFile');
-  const file = fileInput.files[0];
-
-  if (!file) {
-    alert('Please select an image or video.');
-    return;
-  }
-
-  if (file.size > 50 * 1024 * 1024) {
-    alert('File must be smaller than 50 MB.');
-    return;
-  }
-
-  const user = (await supabaseClient.auth.getUser()).data.user;
-
-  if (!user) {
-    alert('Please log in first.');
-    return;
-  }
-
-  const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
-  const bucket = mediaType === 'video' ? 'videos' : 'posts';
-
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const filePath = user.id + '/' + Date.now() + '-' + safeName;
-
-  const { error: uploadError } = await supabaseClient.storage
-    .from(bucket)
-    .upload(filePath, file);
-
-  if (uploadError) {
-    alert('Upload failed: ' + uploadError.message);
-    return;
-  }
-
-  const { data: urlData } = supabaseClient.storage
-    .from(bucket)
-    .getPublicUrl(filePath);
-
-  const { error: insertError } = await supabaseClient
-    .from('posts')
-    .insert({
-      user_id: user.id,
-      caption: caption,
-      image: mediaType === 'image' ? urlData.publicUrl : null,
-      video: mediaType === 'video' ? urlData.publicUrl : null,
-      media_type: mediaType
-    });
-
-  if (insertError) {
-    alert('Post failed: ' + insertError.message);
-    return;
-  }
-
-  alert('Post shared successfully!');
-  document.getElementById('caption').value = '';
-  fileInput.value = '';
-  loadPosts();
-}
-  const file = document.getElementById('postFile').files[0];
-  const caption = document.getElementById('postCaption').value.trim();
-  const message = document.getElementById('postMessage');
-
-  if (!file) {
-    message.textContent = 'Please choose a photo or video.';
-    return;
-  }
-
-  if (!file.type.startsWith('image/') &&
-      !file.type.startsWith('video/')) {
-    message.textContent = 'Choose a valid photo or video.';
-    return;
-  }
-
-  if (file.size > 50 * 1024 * 1024) {
-    message.textContent = 'File must be smaller than 50 MB.';
-    return;
-  }
-
-  message.textContent = 'Uploading...';
-
-  try {
-    const { data: { user }, error: userError } =
-      await supabaseClient.auth.getUser();
-
-    if (userError || !user) {
-      throw new Error('Please log in first.');
-    }
-
-    const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
-    const filePath = user.id + '/' + Date.now() + '-' + file.name;
-
-    const { error: uploadError } = await supabaseClient.storage
-      .from('posts')
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data: urlData } = supabaseClient.storage
-      .from('posts')
-      .getPublicUrl(filePath);
-
-    const { error: postError } = await supabaseClient
-      .from('posts')
-      .insert({
-        user_id: user.id,
-        caption: caption,
-        image: mediaType === 'image' ? urlData.publicUrl : null,
-        video: mediaType === 'video' ? urlData.publicUrl : null,
-        media_type: mediaType
-      });
-
-    if (postError) throw postError;
-
-    message.textContent = 'Your post was shared! 💜';
-    document.getElementById('postCaption').value = '';
-    document.getElementById('postFile').value = '';
-    await loadPosts();
-
-  } catch (error) {
-    message.textContent = error.message;
-  }
 }
 
-async function loadPosts() {
-  const feed = document.getElementById('postsFeed');
-  feed.textContent = 'Loading posts...';
+async function logout(){
+const {error}=await supabaseClient.auth.signOut();
+if(error){alert(error.message);return;}
+location.reload();
+}
 
-  const { data, error } = await supabaseClient
-    .from('posts')
-    .select('*')
-    .order('created_at', { ascending: false });
+async function uploadAvatar(){
+const file=document.getElementById('avatarFile').files[0];
+if(!file){alert('Please choose a photo first.');return;}
+if(!file.type.startsWith('image/')){alert('Choose an image file.');return;}
+if(file.size>5*1024*1024){alert('Photo must be smaller than 5 MB.');return;}
 
-  if (error) {
-    feed.textContent = error.message;
-    return;
-  }
+const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+if(userError||!user){alert('Please log in first.');return;}
 
-  feed.replaceChildren();
+const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+const path=user.id+'/'+Date.now()+'-'+safeName;
 
-  data.forEach(post => {
-    const card = document.createElement('div');
-    card.style.cssText =
-      'background:white;padding:15px;margin:15px auto;max-width:500px;border-radius:15px;';
+const {error}=await supabaseClient.storage.from('avatars').upload(path,file);
+if(error){alert(error.message);return;}
 
-    const caption = document.createElement('p');
-    caption.textContent = post.caption || '';
-    card.appendChild(caption);
+const {data}=supabaseClient.storage.from('avatars').getPublicUrl(path);
+const photoUrl=data.publicUrl;
 
-    const url = post.media_type === 'video' ? post.video : post.image;
+const {error:updateError}=await supabaseClient.from('profiles')
+.upsert({id:user.id,avatar_url:photoUrl});
 
-    if (url) {
-      const media = document.createElement(
-        post.media_type === 'video' ? 'video' : 'img'
-      );
+if(updateError){alert(updateError.message);return;}
+document.getElementById('avatarImage').src=photoUrl;
+document.getElementById('avatarFile').value='';
+alert('Profile photo uploaded successfully! 💜');
+}
 
-      media.src = url;
-      media.style.cssText = 'width:100%;max-height:400px;object-fit:contain;margin-top:10px;border-radius:10px;';
+async function createPost(){
+const caption=document.getElementById('postCaption').value.trim();
+const fileInput=document.getElementById('postFile');
+const file=fileInput.files[0];
+const message=document.getElementById('postMessage');
 
-      if (post.media_type === 'video') {
-        media.controls = true;
-      }
+if(!file){message.textContent='Please select an image or video.';return;}
+if(!file.type.startsWith('image/')&&!file.type.startsWith('video/')){
+message.textContent='Choose a valid photo or video.';return;
+}
+if(file.size>50*1024*1024){message.textContent='File must be smaller than 50 MB.';return;}
 
-      card.appendChild(media);
-    }
+message.textContent='Uploading...';
+const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+if(userError||!user){message.textContent='Please log in first.';return;}
 
-    feed.appendChild(card);
-  });
-}</script>
-<section id="postsSection" style="display:none; padding:25px 7%; text-align:center;">
-  <h2>Share a moment 💜</h2>
-  <textarea id="postCaption" placeholder="What's happening?" style="width:100%;max-width:500px;padding:12px;margin:15px 0;border-radius:10px;"></textarea>
-  <br>
-  <input id="postFile" type="file" accept="image/*,video/*">
-  <br>
-  <button onclick="createPost()" style="padding:12px 22px;margin:15px;background:#793bdf;color:white;border:0;border-radius:20px;">
-    Share post
-  </button>
-  <p id="postMessage"></p>
-  <h2>Latest posts</h2>
-  <div id="postsFeed"></div>
-</section></html>
+const mediaType=file.type.startsWith('video/')?'video':'image';
+const bucket=mediaType==='video'?'videos':'posts';
+const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+const path=user.id+'/'+Date.now()+'-'+safeName;
+
+const {error:uploadError}=await supabaseClient.storage.from(bucket).upload(path,file);
+if(uploadError){message.textContent='Upload failed: '+uploadError.message;return;}
+
+const {data:urlData}=supabaseClient.storage.from(bucket).getPublicUrl(path);
+const {error:insertError}=await supabaseClient.from('posts').insert({
+user_id:user.id,
+caption:caption,
+image:mediaType==='image'?urlData.publicUrl:null,
+video:mediaType==='video'?urlData.publicUrl:null,
+media_type:mediaType
+});
+
+if(insertError){message.textContent='Post failed: '+insertError.message;return;}
+
+message.textContent='Your post was shared! 💜';
+document.getElementById('postCaption').value='';
+fileInput.value='';
+await loadPosts();
+}
+
+async function loadPosts(){
+const feed=document.getElementById('postsFeed');
+feed.textContent='Loading posts...';
+
+const {data,error}=await supabaseClient.from('posts')
+.select('*').order('created_at',{ascending:false});
+
+if(error){feed.textContent=error.message;return;}
+feed.replaceChildren();
+
+(data||[]).forEach(post=>{
+const card=document.createElement('div');
+card.className='post';
+
+const caption=document.createElement('p');
+caption.textContent=post.caption||'';
+card.appendChild(caption);
+
+const isVideo=post.media_type==='video'||(!post.image&&!!post.video);
+const url=isVideo?post.video:post.image;
+
+if(url){
+const media=document.createElement(isVideo?'video':'img');
+media.src=url;
+if(isVideo){media.controls=true;media.playsInline=true;}
+card.appendChild(media);
+}
+feed.appendChild(card);
+});
+}
+
+document.getElementById('authForm').addEventListener('submit',async function(event){
+event.preventDefault();
+
+const name=document.getElementById('name').value.trim();
+const email=document.getElementById('email').value.trim();
+const password=document.getElementById('password').value;
+const message=document.getElementById('message');
+const button=document.getElementById('submitButton');
+
+button.disabled=true;
+message.textContent='Please wait...';
+
+try{
+if(currentMode==='signup'){
+const {error}=await supabaseClient.auth.signUp({
+email,password,
+options:{
+data:{full_name:name},
+emailRedirectTo:'https://nasboi2007-commits.github.io/looply-social/'
+}
+});
+if(error)throw error;
+message.textContent='Account created! Check your email to confirm your account.';
+}else{
+const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+if(error)throw error;
+message.textContent='You are logged in successfully!';
+await showProfile();
+}
+}catch(error){
+message.textContent=error.message||'Something went wrong.';
+}finally{
+button.disabled=false;
+}
+});
+
+showForm('signup');
+
+async function restoreLoginSession(){
+const {data,error}=await supabaseClient.auth.getSession();
+if(!error&&data.session)await showProfile();
+}
+restoreLoginSession();
+</script>
+</body>
+</html>
