@@ -215,8 +215,70 @@ document.getElementById('postCaption').value='';
 fileInput.value='';
 await loadPosts();
 }
-
 async function loadPosts(){
+  const feed=document.getElementById('postsFeed');
+  feed.textContent='Loading posts...';
+
+  const {data:posts,error}=await supabaseClient
+    .from('posts')
+    .select('*')
+    .order('created_at',{ascending:false});
+
+  if(error){
+    feed.textContent=error.message;
+    return;
+  }
+
+  const {data:{user}}=await supabaseClient.auth.getUser();
+
+  const {data:likes,error:likesError}=await supabaseClient
+    .from('likes')
+    .select('id,post_id,user_id');
+
+  if(likesError){
+    feed.textContent='Likes error: '+likesError.message;
+    return;
+  }
+
+  feed.replaceChildren();
+
+  (posts||[]).forEach(post=>{
+    const card=document.createElement('div');
+    card.className='post';
+
+    const caption=document.createElement('p');
+    caption.textContent=post.caption||'';
+    card.appendChild(caption);
+
+    const isVideo=post.media_type==='video'||(!post.image&&!!post.video);
+    const url=isVideo?post.video:post.image;
+
+    if(url){
+      const media=document.createElement(isVideo?'video':'img');
+      media.src=url;
+
+      if(isVideo){
+        media.controls=true;
+        media.playsInline=true;
+      }
+
+      card.appendChild(media);
+    }
+
+    const postLikes=(likes||[]).filter(like=>like.post_id===post.id);
+    const liked=postLikes.some(like=>like.user_id===user?.id);
+
+    const likeButton=document.createElement('button');
+    likeButton.textContent=(liked?'❤️':'🤍')+' Like ('+postLikes.length+')';
+
+    likeButton.style.background=liked?'#ed45a5':'#793bdf';
+
+    likeButton.onclick=()=>toggleLike(post.id,liked);
+
+    card.appendChild(likeButton);
+    feed.appendChild(card);
+  });
+}
 const feed=document.getElementById('postsFeed');
 feed.textContent='Loading posts...';
 
@@ -246,7 +308,38 @@ card.appendChild(media);
 feed.appendChild(card);
 });
 }
+async function toggleLike(postId,liked){
+  const {data:{user},error:userError}=await supabaseClient.auth.getUser();
 
+  if(userError||!user){
+    alert('Please log in first.');
+    return;
+  }
+
+  let result;
+
+  if(liked){
+    result=await supabaseClient
+      .from('likes')
+      .delete()
+      .eq('post_id',postId)
+      .eq('user_id',user.id);
+  }else{
+    result=await supabaseClient
+      .from('likes')
+      .insert({
+        post_id:postId,
+        user_id:user.id
+      });
+  }
+
+  if(result.error){
+    alert(result.error.message);
+    return;
+  }
+
+  await loadPosts();
+}
 document.getElementById('authForm').addEventListener('submit',async function(event){
 event.preventDefault();
 
